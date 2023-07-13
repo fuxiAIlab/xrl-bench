@@ -11,9 +11,12 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class LunarLander:
-    def __init__(self, env_id='LunarLander-v2', state_size=8, action_size=4, load_model=True):
+    def __init__(self, env_id='LunarLander-v2', state_size=8, action_size=4, load_model=True, state_names=None, categorical_states=None):
         self.env = gym.make(env_id)
         self.agent = Agent(state_size=state_size, action_size=action_size)
+        self.state_names = ["Horizontal_coordinates", "Vertical_coordinates", "Horizontal_speed", "Vertical_speed", "Angle",
+                             "Angular_velocity", "Leg1_touchdown", "Leg2_touchdown"] if state_names is None else state_names
+        self.categorical_states = [] if categorical_states is None else categorical_states
         if load_model:
             try:
                 self.agent.qnetwork_local.load_state_dict(torch.load("./model/LunarLander.pth"))
