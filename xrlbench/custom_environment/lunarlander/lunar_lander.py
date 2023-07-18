@@ -91,6 +91,7 @@ class LunarLander:
                 print("\nEnvironment solved in {:d} episodes!\tAverage Score: {:.2f}".format(i, np.mean(scores_window)))
                 break
         torch.save(self.agent.qnetwork_local.state_dict(), os.path.join(".", "model", "LunarLander.pth"))
+        return self.agent.qnetwork_local
 
     def get_dataset(self, generate=False, n_episodes=500, max_t=1000):
         """
