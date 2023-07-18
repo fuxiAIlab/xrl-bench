@@ -6,7 +6,8 @@ valid_metrics = {
     "AIM": xrlbench.custom_metrics.AIM,
     "AUM": xrlbench.custom_metrics.AUM,
     "PGI": xrlbench.custom_metrics.PGI,
-    "PGU": xrlbench.custom_metrics.PGU
+    "PGU": xrlbench.custom_metrics.PGU,
+    "RIS": xrlbench.custom_metrics.RIS
 }
 
 

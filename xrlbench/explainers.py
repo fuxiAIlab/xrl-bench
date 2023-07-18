@@ -3,9 +3,12 @@
 import xrlbench.custom_explainers
 
 valid_explainers = {
-    "tarbularShap": xrlbench.custom_explainers.TarbularSHAP,
-    "sarfa": xrlbench.custom_explainers.SARFA
-
+    "tarbularSHAP": xrlbench.custom_explainers.TabularSHAP,
+    "sarfa": xrlbench.custom_explainers.SARFA,
+    "visualizeSaliency": xrlbench.custom_explainers.VisualizeSaliency,
+    "tarbularLIME": xrlbench.custom_explainers.TabularLime,
+    "deepSHAP": xrlbench.custom_explainers.DeepSHAP,
+    "gradientSHAP": xrlbench.custom_explainers.GradientSHAP
 }
 
 
