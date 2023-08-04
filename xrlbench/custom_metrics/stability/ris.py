@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import copy
+import shap
 import numpy as np
 import pandas as pd
 from xrlbench.utils.perturbation import get_normal_perturbed_inputs
@@ -28,7 +28,7 @@ class RIS:
             The input data.
         y : pandas.Series or numpy.ndarray
             The labels of the input data.
-        feature_weights : numpy.ndarray
+        feature_weights : numpy.ndarray or shap.Explanation
             The feature weights computed using an XRL method.
         explainer : object
             The explainer used to compute the feature weights.
@@ -42,12 +42,15 @@ class RIS:
             raise TypeError("Input data must be a pandas.DataFrame.")
         if not isinstance(y, (pd.Series, np.ndarray)):
             raise TypeError("y must be a numpy.ndarray or pandas.Series")
+        if not isinstance(feature_weights, (np.ndarray, shap.Explanation)):
+            raise TypeError("feature_weights must be a np.ndarray or shap.Explanation")
         if not hasattr(explainer, 'explain'):
             raise AttributeError("Explainer object must have an 'explain' method.")
 
         feature_names = list(X.columns)
         X = X.values
         y = y.values if isinstance(y, pd.Series) else y
+        feature_weights = feature_weights.values if isinstance(feature_weights, shap.Explanation) else feature_weights
         stability_ratios = []
         X_perturbed = X.copy()
         perturbed_inds = [range(X.shape[1]) for _ in range(X.shape[0])]
@@ -59,6 +62,8 @@ class RIS:
         if len(np.array(feature_weights).shape) == 3:
             feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
             perturbed_weights = [perturbed_weights[i, :, int(y[i])] for i in range(len(perturbed_weights))]
+        elif len(np.array(feature_weights).shape) != 2:
+            raise ValueError("Invalid shape for feature weights.")
         for i in range(X.shape[0]):
             # compute x's difference ratio
             x_diff = X[i] - X_perturbed[i]
