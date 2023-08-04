@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 
-def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None, mean=0, std=0.05):
+def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None, mean=0.0, std=0.05):
     """
     Perturb the input data by adding Gaussian noise to selected features.
 
