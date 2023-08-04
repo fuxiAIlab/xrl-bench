@@ -2,6 +2,8 @@
 
 import torch.nn as nn
 import torch.nn.functional as F
+import torch
+import numpy as np
 
 
 class QNetwork(nn.Module):
@@ -26,12 +28,13 @@ class QNetwork(nn.Module):
             The output layer of the network.
         """
         super(QNetwork, self).__init__()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         hidden_layer = 64
         self.fc1 = nn.Linear(state_size, hidden_layer)
         self.fc2 = nn.Linear(hidden_layer, hidden_layer)
         self.fc3 = nn.Linear(hidden_layer, action_size)
 
-    def forward(self, state):
+    def forward(self, state, requires_grad=True):
         """
         Feed-forward computation of the Q-network.
 
@@ -45,6 +48,12 @@ class QNetwork(nn.Module):
         torch.Tensor
             The output of the network.
         """
+        if isinstance(state, np.ndarray):
+            state = torch.from_numpy(state).float()
+            requires_grad = False
         x = F.relu(self.fc1(state))
         x = F.relu(self.fc2(x))
-        return self.fc3(x)
+        if requires_grad:
+            return self.fc3(x)
+        else:
+            return np.array(self.fc3(x).detach().cpu())

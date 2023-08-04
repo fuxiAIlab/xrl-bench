@@ -74,16 +74,16 @@ class ReplayBuffer:
             Whether the episodes have ended.
         """
         experiences = random.sample(self.memory, k=self.batch_size)
-        states = torch.Tensor(np.array([e.state for e in experiences if e is not None])).float().to(self.device)
-        actions = torch.Tensor(np.array([e.action for e in experiences if e is not None])).long().to(self.device)
-        rewards = torch.Tensor(np.array([e.reward for e in experiences if e is not None])).float().to(self.device)
-        next_states = torch.Tensor(np.array([e.next_state for e in experiences if e is not None])).float().to(self.device)
-        dones = torch.Tensor(np.array([e.done for e in experiences if e is not None], dtype=np.uint8)).float().to(
-            self.device)
-        return states, actions, rewards, next_states, dones
-        # states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
-        # actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(device)
-        # rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
-        # next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
-        # dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
+        # states = torch.Tensor(np.array([e.state for e in experiences if e is not None])).unsqueeze(-1).float().to(self.device)
+        # actions = torch.Tensor(np.array([e.action for e in experiences if e is not None])).unsqueeze(-1).long().to(self.device)
+        # rewards = torch.Tensor(np.array([e.reward for e in experiences if e is not None])).unsqueeze(-1).float().to(self.device)
+        # next_states = torch.Tensor(np.array([e.next_state for e in experiences if e is not None])).unsqueeze(-1).float().to(self.device)
+        # dones = torch.Tensor(np.array([e.done for e in experiences if e is not None], dtype=np.uint8)).unsqueeze(-1).float().to(
+        #     self.device)
         # return states, actions, rewards, next_states, dones
+        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(self.device)
+        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(self.device)
+        rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(self.device)
+        next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(self.device)
+        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(self.device)
+        return states, actions, rewards, next_states, dones

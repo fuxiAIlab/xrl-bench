@@ -10,7 +10,6 @@ from xrlbench.custom_environment.lunarlander.agent import Agent
 
 
 class LunarLander:
-    # load_model=True,
     def __init__(self, env_id='LunarLander-v2',  state_names=None, categorical_states=None):
         """
         Class for constructing a Lunar Lander environment.
@@ -30,25 +29,24 @@ class LunarLander:
             The environment.
         agent : Agent
             The reinforcement learning agent.
+        model : QNetwork
+            The local Q-network.
         """
         self.env = gym.make(env_id)
         self.agent = Agent(state_size=self.env.observation_space.shape[0], action_size=self.env.action_space.n)
+        self.model = self.agent.qnetwork_local
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.state_names = ["Horizontal_coordinates", "Vertical_coordinates", "Horizontal_speed", "Vertical_speed", "Angle",
                              "Angular_velocity", "Leg1_touchdown", "Leg2_touchdown"] if state_names is None else state_names
         self.categorical_states = [] if categorical_states is None else categorical_states
-        # if load_model:
-        #     try:
-        #         self.agent.qnetwork_local.load_state_dict(torch.load("./model/LunarLander.pth"))
-        #     except:
-        #         print("This model is not existing, please train it.")
+        self.load_model()
 
     def load_model(self):
         """
         Load model for the reinforcement learning agent.
         """
         try:
-            self.agent.qnetwork_local.load_state_dict(torch.load(os.path.join(".", "model", "LunarLander.pth")))
+            self.model.load_state_dict(torch.load(os.path.join(".", "model", "LunarLander.pth")))
         except:
             print("This model is not existing, please train it.")
 
@@ -109,7 +107,7 @@ class LunarLander:
         Returns:
         --------
         df : pandas.DataFrame
-            The dataset.
+            The dataset including state, action and reward.
         """
         if generate:
             self.agent.qnetwork_local.load_state_dict(torch.load(os.path.join(".", "model", "LunarLander.pth")))
@@ -130,7 +128,7 @@ class LunarLander:
             return df
         else:
             try:
-                df = pd.read_csv("./data/LunarLander_dataset.csv")
+                df = pd.read_csv(os.path.join(".", "data", "LunarLander_dataset.csv"))
                 return df
             except:
                 print("This dataset is not existing, please generate it.")

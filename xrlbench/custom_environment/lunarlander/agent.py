@@ -134,9 +134,9 @@ class Agent:
         """
         states, actions, rewards, next_states, dones = experiences
         # forward
-        q_hat = self.qnetwork_target(next_states).detach().max(dim=1)[0].unsqueeze(1)
+        q_hat = self.qnetwork_target.forward(next_states).detach().max(dim=1)[0].unsqueeze(1)
         target = rewards + gamma * q_hat * (1 - dones)
-        q_local = self.qnetwork_local(states).gather(1, actions)
+        q_local = self.qnetwork_local.forward(states).gather(1, actions)
         loss = F.mse_loss(q_local, target)
         self.optimizer.zero_grad()
         loss.backward()
