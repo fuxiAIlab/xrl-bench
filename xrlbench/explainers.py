@@ -3,10 +3,10 @@
 import xrlbench.custom_explainers
 
 valid_explainers = {
-    "tarbularShap": xrlbench.custom_explainers.TabularSHAP,
+    "tabularShap": xrlbench.custom_explainers.TabularSHAP,
     "sarfa": xrlbench.custom_explainers.SARFA,
     "visualizeSaliency": xrlbench.custom_explainers.VisualizeSaliency,
-    "tarbularLime": xrlbench.custom_explainers.TabularLime,
+    "tabularLime": xrlbench.custom_explainers.TabularLime,
     "deepShap": xrlbench.custom_explainers.DeepSHAP,
     "gradientShap": xrlbench.custom_explainers.GradientSHAP
 }
@@ -26,6 +26,10 @@ class Explainer:
             The state array.
         action : numpy.ndarray
             The action array.
+         model : pytorch model, default=None
+            The trained reinforcement learning model.
+        categorical_names : list, optional (default=None)
+            A list of names of categorical features in X.
         **kwargs :
             Keyword arguments to be passed to the explainer.
         """

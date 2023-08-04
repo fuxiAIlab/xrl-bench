@@ -3,8 +3,8 @@
 import xrlbench.custom_environment
 
 valid_environments = {
-    "lunarLander": xrlbench.custom_environment.LunarLander
-
+    "lunarLander": xrlbench.custom_environment.LunarLander,
+    "cartPole": xrlbench.custom_environment.CartPole
 }
 
 
@@ -28,6 +28,7 @@ class Environment:
         self.environment_name = environment_name
         self.environment = valid_environments[environment_name]()
         self.agent = self.environment.agent
+        self.model = self.environment.model
         self.categorical_states = self.environment.categorical_states
         # .get_dataset(generate=generate)
 
