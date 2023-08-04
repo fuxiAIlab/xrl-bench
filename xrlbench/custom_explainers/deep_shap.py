@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import shap
+import torch
 import numpy as np
 import pandas as pd
 
@@ -34,8 +35,9 @@ class DeepSHAP:
         self.X = X
         self.y = y
         self.model = model
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.background = background if background else X.values[np.random.choice(X.shape[0], 100, replace=False)]
-        self.explainer = shap.DeepExplainer(model, self.background)
+        self.explainer = shap.DeepExplainer(model, torch.from_numpy(self.background).float().to(self.device))
 
     def explain(self, X=None):
         """
@@ -55,5 +57,5 @@ class DeepSHAP:
         """
         if X is None:
             X = self.X
-        shap_values = self.explainer(X)
-        return shap_values
+        shap_values = self.explainer.shap_values(torch.from_numpy(X.values).float().to(self.device))
+        return np.array(shap_values).transpose((1, 2, 0))

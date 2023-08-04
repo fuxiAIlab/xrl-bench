@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+import torch
 try:
     import lime
     import lime.lime_tabular
@@ -57,12 +58,13 @@ class TabularLime:
         self.model = model
         assert mode in ["classification", "regression"]
         self.mode = mode
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         self.categorical_names = categorical_names if categorical_names else []
-        self.categorical_index = [self.feature_names.index(state) for state in categorical_names]
-        self.explainer = lime.lime_tabular.LimeTabularExplainer(X, mode=mode, feature_names=self.feature_names, categorical_features=self.categorical_index)
-
-        out = self.model(X[0:1])
+        self.categorical_index = [self.feature_names.index(state) for state in categorical_names] if categorical_names else []
+        self.explainer = lime.lime_tabular.LimeTabularExplainer(self.X, mode=mode, feature_names=self.feature_names, categorical_features=self.categorical_index)
+        # torch.from_numpy(state).float().unsqueeze(0).to(self.device)
+        out = self.model(torch.from_numpy(self.X[0:1]).float().to(self.device))
         if len(out.shape) == 1:
             self.out_dim = 1
             self.flat_out = True
@@ -73,7 +75,7 @@ class TabularLime:
                     return np.hstack((p0, preds))
                 self.model = pred
         else:
-            self.out_dim = self.model(X[0:1]).shape[1]
+            self.out_dim = self.model(torch.from_numpy(self.X[0:1]).float().to(self.device)).shape[1]
             self.flat_out = False
 
     def explain(self, X=None):
@@ -92,6 +94,7 @@ class TabularLime:
         """
         if X is None:
             X = self.X
+        self.model.to("cpu")
         X = X.values if isinstance(X, pd.DataFrame) else X
         importance_scores = [np.zeros(X.shape) for _ in range(self.out_dim)]
         for i in tqdm(range(X.shape[0])):
@@ -100,5 +103,6 @@ class TabularLime:
             for j in range(self.out_dim):
                 for k, v in exp.local_exp[j]:
                     importance_scores[j][i, k] = v
-        return importance_scores
+        self.model.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
+        return np.array(importance_scores).transpose((1, 2, 0))
 

@@ -58,7 +58,7 @@ class VisualizeSaliency:
         self.feature_dim = X.shape[1]
         self.categorical_names = categorical_names if categorical_names else []
 
-    def _add_noise(self, feature):
+    def _add_noise(self, feature, mean=0, std=0.05):
         """
         Add noise to the input feature data.
 
@@ -77,11 +77,13 @@ class VisualizeSaliency:
             if name in self.categorical_names:
                 feature[i] = random.choice(np.unique(self.X[:, i]))
             else:
-                feature_min, feature_max = np.min(self.X[:, i]), np.max(self.X[:, i])
-                feature_mean, feature_std = np.mean(self.X[:, i]), np.std(self.X[:, i])
-                feature_noised = max(min(torch.normal(feature_mean, feature_std, size=(1,)).cpu().item(), feature_max),
-                                     feature_min)
-                feature[i] = feature_noised
+                # feature_min, feature_max = np.min(self.X[:, i]), np.max(self.X[:, i])
+                # feature_mean, feature_std = np.mean(self.X[:, i]), np.std(self.X[:, i])
+                # feature_noised = max(min(torch.normal(feature_mean, feature_std, size=(1,)).cpu().item(), feature_max),
+                #                      feature_min)
+                # feature[i] = feature_noised
+                noise = np.random.normal(mean, std)
+                feature[i] += noise
         res = np.tile(feature_backend, (self.feature_dim, 1))
         res[np.arange(self.feature_dim), np.arange(self.feature_dim)] = feature
         return res
@@ -104,8 +106,9 @@ class VisualizeSaliency:
             Q = self.model(torch.from_numpy(feature).float().unsqueeze(0).to(self.device))
             Q_perturbed = self.model(torch.from_numpy(feature_noised).float().unsqueeze(0).to(self.device))
         Q = np.squeeze(Q.cpu().numpy())
+        Q_max_idx = np.argmax(Q)
         Q_perturbed = np.squeeze(Q_perturbed.cpu().numpy())
-        score = np.abs(Q_perturbed - Q)
+        score = np.abs(Q_perturbed[:, Q_max_idx] - Q[Q_max_idx])
         return score
 
     def explain(self, X=None, batch_size=128):
@@ -131,7 +134,7 @@ class VisualizeSaliency:
         for i in tqdm(range(0, len(X), batch_size), ascii=True):
             batch = X[i:i + batch_size]
             scores = np.array([self._calculate_saliency(x) for x in batch])
-            saliency_scores[i:i + batch_size] = scores
+            saliency_scores[i:i+batch_size] = scores
         self.saliency_scores = saliency_scores
         return self.saliency_scores
 

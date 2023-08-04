@@ -58,7 +58,7 @@ class SARFA:
         self.feature_dim = X.shape[1]
         self.categorical_names = categorical_names if categorical_names else []
 
-    def _add_noise(self, feature):
+    def _add_noise(self, feature, mean=0, std=0.05):
         """
         Add noise to the input feature data.
 
@@ -77,10 +77,13 @@ class SARFA:
             if name in self.categorical_names:
                 feature[i] = random.choice(np.unique(self.X[:, i]))
             else:
-                feature_min, feature_max = np.min(self.X[:, i]), np.max(self.X[:, i])
-                feature_mean, feature_std = np.mean(self.X[:, i]), np.std(self.X[:, i])
-                feature_noised = max(min(torch.normal(feature_mean, feature_std, size=(1,)).cpu().item(), feature_max), feature_min)
-                feature[i] = feature_noised
+                # feature_min, feature_max = np.min(self.X[:, i]), np.max(self.X[:, i])
+                # feature_mean, feature_std = np.mean(self.X[:, i]), np.std(self.X[:, i])
+                # feature_noised = max(min(torch.normal(feature_mean, feature_std, size=(1,)).cpu().item(), feature_max), feature_min)
+                # feature[i] = feature_noised
+                noise = np.random.normal(mean, std)
+                feature[i] += noise
+
         res = np.tile(feature_backend, (self.feature_dim, 1))
         res[np.arange(self.feature_dim), np.arange(self.feature_dim)] = feature
         return res
@@ -108,24 +111,25 @@ class SARFA:
         Q_P = np.exp(Q_P_log)
         Q_idx = np.argmax(Q_P)
         Q_perturbed = Q_perturbed.squeeze().cpu().numpy()
-        Q_perturbed_P_log = Q_perturbed - np.logaddexp.reduce(Q_perturbed, axis=1, keepdims=True)
-        Q_perturbed_P = np.exp(Q_perturbed_P_log)
-        dP = Q_P[Q_idx] - Q_perturbed_P[Q_idx]
-        P_rem = np.delete(Q_P, Q_idx)
-        P_perturbed_rem = np.delete(Q_perturbed_P, Q_idx, axis=1)
-        P_KL = np.sum(P_rem * (np.log(P_rem) - np.logaddexp.reduce(P_perturbed_rem, axis=1)))
-        K = 1. / (1. + P_KL)
-        score[dP > 0] = 2 * dP[dP > 0] * K / (K + dP[dP > 0])
-        # for idx in range(self.feature_dim):
-        #     Q_perturbed_P_log = Q_perturbed[idx] - logsumexp(Q_perturbed[idx])
-        #     Q_perturbed_P = np.exp(Q_perturbed_P_log)
-        #     dP = Q_P[Q_idx] - Q_perturbed_P[Q_idx]
-        #     if dP > 0:
-        #         P_rem = np.append(Q_P[:Q_idx], Q_P[Q_idx + 1:])
-        #         P_perturbed_rem = np.append(Q_perturbed_P[:Q_idx], Q_perturbed_P[Q_idx + 1:])
-        #         P_KL = entropy(P_rem, P_perturbed_rem)
-        #         K = 1. / (1. + P_KL)
-        #         score[idx] = 2 * dP * K / (K + dP)
+
+        # Q_perturbed_P_log = Q_perturbed - np.logaddexp.reduce(Q_perturbed, axis=1, keepdims=True)
+        # Q_perturbed_P = np.exp(Q_perturbed_P_log)
+        # dP = Q_P[Q_idx] - Q_perturbed_P[Q_idx]
+        # P_rem = np.delete(Q_P, Q_idx)
+        # P_perturbed_rem = np.delete(Q_perturbed_P, Q_idx, axis=1)
+        # P_KL = np.sum(P_rem * (np.log(P_rem) - np.logaddexp.reduce(P_perturbed_rem, axis=1)))
+        # K = 1. / (1. + P_KL)
+        # score[dP > 0] = 2 * dP[dP > 0] * K / (K + dP[dP > 0])
+        for idx in range(self.feature_dim):
+            Q_perturbed_P_log = Q_perturbed[idx] - logsumexp(Q_perturbed[idx])
+            Q_perturbed_P = np.exp(Q_perturbed_P_log)
+            dP = Q_P[Q_idx] - Q_perturbed_P[Q_idx]
+            if dP > 0:
+                P_rem = np.append(Q_P[:Q_idx], Q_P[Q_idx + 1:])
+                P_perturbed_rem = np.append(Q_perturbed_P[:Q_idx], Q_perturbed_P[Q_idx + 1:])
+                P_KL = entropy(P_rem, P_perturbed_rem)
+                K = 1. / (1. + P_KL)
+                score[idx] = 2 * dP * K / (K + dP)
         return score
 
     def explain(self, X=None, batch_size=128):
