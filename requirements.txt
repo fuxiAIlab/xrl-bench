@@ -1,0 +1,11 @@
+flappy_bird_gymnasium==0.2.2
+gymnasium==0.29.0
+lightgbm==4.0.0
+lime==0.2.0.1
+numpy==1.24.2
+pandas==2.0.3
+scikit_learn==1.3.0
+scipy==1.11.1
+shap==0.42.1
+torch==1.7.1+cu110
+tqdm==4.65.0
