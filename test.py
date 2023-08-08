@@ -21,17 +21,16 @@ if __name__ == "__main__":
     # print(df.info())
 
     # TarbularSHAP explain in LunarLander environment
-    environment = Environment(environment_name="cartPole")
+    environment = Environment(environment_name="lunarLander")
     # environment.train_model()
     df = environment.get_dataset(generate=False)
     df_sample = df.sample(n=5000, random_state=42)
     action_sample = df_sample['action']
-    print(action_sample)
     state_sample = df_sample.drop(['action', 'reward'], axis=1)
     explainer = Explainer(method='tabularShap', state=state_sample, action=action_sample)
     saliency = explainer.explain()
     evaluator = Evaluator(metric="AUM", environment=environment)
-    aum = evaluator.evaluate(state_sample, action_sample, saliency, k=2)
+    aum = evaluator.evaluate(state_sample, action_sample, saliency, k=4)
     print("accuracy:", aum)
 
     # SARFA explain in LunarLander environment
