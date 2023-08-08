@@ -52,14 +52,11 @@ class AUM:
             feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature_weights.")
-        print(feature_weights[0].shape)
         weights_ranks = [np.argsort(feature_weights[i])[:k] for i in range(len(feature_weights))]
         masked_X = X.copy()
-        print(masked_X.shape)
         for i in range(X.shape[0]):
             masked_X[i][weights_ranks[i]] = 0
         y_pred = [self.environment.agent.act(masked_X[i]) for i in range(masked_X.shape[0])]
-        print(y_pred)
         accuracy = np.mean(y_pred == y)
         return accuracy
 
