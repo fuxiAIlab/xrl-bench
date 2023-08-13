@@ -6,3 +6,4 @@ from xrlbench.custom_explainers.visualize_saliency import VisualizeSaliency
 from xrlbench.custom_explainers.tabular_lime import TabularLime
 from xrlbench.custom_explainers.deep_shap import DeepSHAP
 from xrlbench.custom_explainers.gradient_shap import GradientSHAP
+from xrlbench.custom_explainers.integrated_gradient import IntegratedGradient
