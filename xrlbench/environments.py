@@ -33,7 +33,7 @@ class Environment:
         self.categorical_states = self.environment.categorical_states
         # .get_dataset(generate=generate)
 
-    def train_model(self, ending_score=220):
+    def train_model(self, **kwargs):
         """
         Train the model on the selected environment.
 
@@ -42,9 +42,9 @@ class Environment:
         ending_score : int, optional
             The score at which the training will stop. Default is 220.
         """
-        return self.environment.train_model(ending_score=ending_score)
+        return self.environment.train_model(**kwargs)
 
-    def get_dataset(self, generate=False):
+    def get_dataset(self, generate=False, **kwargs):
         """
         Return the dataset for the selected environment.
 
@@ -53,7 +53,7 @@ class Environment:
         generate : bool, optional
             Whether to generate a new dataset or use the cached one. Default is False.
         """
-        return self.environment.get_dataset(generate=generate)
+        return self.environment.get_dataset(generate=generate, **kwargs)
 
 
 

@@ -8,7 +8,8 @@ valid_explainers = {
     "visualizeSaliency": xrlbench.custom_explainers.VisualizeSaliency,
     "tabularLime": xrlbench.custom_explainers.TabularLime,
     "deepShap": xrlbench.custom_explainers.DeepSHAP,
-    "gradientShap": xrlbench.custom_explainers.GradientSHAP
+    "gradientShap": xrlbench.custom_explainers.GradientSHAP,
+    "integratedGradient": xrlbench.custom_explainers.IntegratedGradient
 }
 
 
