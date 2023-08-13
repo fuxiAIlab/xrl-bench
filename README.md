@@ -6,7 +6,7 @@
 
 ## Key Features
 - **Environments**: XRL-Bench includes diverse open-source environments based on tabular numerical states and image data states, such as Lunar Lander, CartPole, and Flappy Bird, covering a wide range of reinforcement learning tasks.
-- **Explainers**: The benchmark supports various feature importance-based explainers like TabularSHAP, TabularLIME, SARFA, VisualizeSaliency, DeepSHAP and GradientSHAP, to understand the decision-making process of the RL agents.
+- **Explainers**: The benchmark supports various feature importance-based explainers like TabularSHAP, TabularLIME, SARFA, VisualizeSaliency, IntegratedGradient, DeepSHAP and GradientSHAP, to understand the decision-making process of the RL agents.
 - **Evaluation Methods**: XRL-Bench provides multiple evaluation methods, including but not limited to Fidelity-focused methods such as AIM, AUM, PGI and PGU, and Stability-focused methods such as RIS. Additionally, XRL-Bench includes human evaluations for more intuitive and comprehensive evaluation results.
 
 ## Getting Started
