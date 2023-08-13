@@ -34,8 +34,6 @@ class FlappyBird:
             The local Q-network.
         """
         self.env = gym.make(env_id)
-        print(self.env.observation_space.shape[0])
-        print(self.env.action_space.n)
         self.agent = Agent(state_size=self.env.observation_space.shape[0], action_size=self.env.action_space.n)
         self.model = self.agent.qnetwork_local
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -54,7 +52,7 @@ class FlappyBird:
         except:
             print("This model is not existing, please train it.")
 
-    def train_model(self, n_episodes=100000, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.995, ending_score=100):
+    def train_model(self, n_episodes=200000, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.995, ending_score=100):
         """
         Train the reinforcement learning agent.
 
@@ -114,7 +112,7 @@ class FlappyBird:
             The dataset including state, action and reward.
         """
         if generate:
-            self.agent.qnetwork_local.load_state_dict(torch.load(os.path.join(".", "model", "LunarLander.pth")))
+            self.agent.qnetwork_local.load_state_dict(torch.load(os.path.join(".", "model", "FlappyBird.pth")))
             data = []
             for i in range(n_episodes):
                 state = self.env.reset()[0]
