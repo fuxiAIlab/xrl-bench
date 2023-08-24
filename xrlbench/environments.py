@@ -44,7 +44,7 @@ class Environment:
         """
         return self.environment.train_model(**kwargs)
 
-    def get_dataset(self, generate=False, **kwargs):
+    def get_dataset(self, generate=False, data_format="csv", **kwargs):
         """
         Return the dataset for the selected environment.
 
@@ -52,8 +52,10 @@ class Environment:
         -----------
         generate : bool, optional
             Whether to generate a new dataset or use the cached one. Default is False.
+        data_format: string, optional
+            Define the format of saved dataset. "csv" and "h5" are supported. Default is "csv".
         """
-        return self.environment.get_dataset(generate=generate, **kwargs)
+        return self.environment.get_dataset(generate=generate, data_format=data_format, **kwargs)
 
 
 
