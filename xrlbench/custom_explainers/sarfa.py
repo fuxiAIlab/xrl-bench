@@ -112,14 +112,6 @@ class SARFA:
         Q_idx = np.argmax(Q_P)
         Q_perturbed = Q_perturbed.squeeze().cpu().numpy()
 
-        # Q_perturbed_P_log = Q_perturbed - np.logaddexp.reduce(Q_perturbed, axis=1, keepdims=True)
-        # Q_perturbed_P = np.exp(Q_perturbed_P_log)
-        # dP = Q_P[Q_idx] - Q_perturbed_P[Q_idx]
-        # P_rem = np.delete(Q_P, Q_idx)
-        # P_perturbed_rem = np.delete(Q_perturbed_P, Q_idx, axis=1)
-        # P_KL = np.sum(P_rem * (np.log(P_rem) - np.logaddexp.reduce(P_perturbed_rem, axis=1)))
-        # K = 1. / (1. + P_KL)
-        # score[dP > 0] = 2 * dP[dP > 0] * K / (K + dP[dP > 0])
         for idx in range(self.feature_dim):
             Q_perturbed_P_log = Q_perturbed[idx] - logsumexp(Q_perturbed[idx])
             Q_perturbed_P = np.exp(Q_perturbed_P_log)
