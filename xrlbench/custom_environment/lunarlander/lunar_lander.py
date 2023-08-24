@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 from collections import deque
+from d3rlpy.dataset import MDPDataset
 from xrlbench.custom_environment.lunarlander.agent import Agent
 
 
@@ -91,7 +92,7 @@ class LunarLander:
         torch.save(self.agent.qnetwork_local.state_dict(), os.path.join(".", "model", "LunarLander.pth"))
         return self.agent.qnetwork_local
 
-    def get_dataset(self, generate=False, n_episodes=500, max_t=1000):
+    def get_dataset(self, generate=False, n_episodes=500, max_t=1000, data_format="csv"):
         """
         Get the dataset for the Lunar Lander environment.
 
@@ -121,15 +122,29 @@ class LunarLander:
                     state = next_state
                     if done:
                         break
-            data = [np.concatenate([row["state"], row["action"], row["reward"]], axis=0) for row in data]
-            columns_name = self.state_names + ["action", "reward"]
-            df = pd.DataFrame(data, columns=columns_name)
-            df.to_csv("./data/LunarLander_dataset.csv", index=False)
-            return df
+            if data_format == "h5":
+                observations = np.vstack([row["state"] for row in data])
+                actions = np.vstack([row["action"] for row in data])
+                rewards = np.vstack([row["reward"] for row in data])
+                terminals = np.vstack([row["terminal"] for row in data])
+                dataset = MDPDataset(observations, actions, rewards, terminals)
+                dataset.dump(os.path.join(".", "data", "LunarLander_dataset.h5"))
+            else:
+                dataset = [np.concatenate([row["state"], row["action"], row["reward"]], axis=0) for row in data]
+                columns_name = self.state_names + ["action", "reward"]
+                dataset = pd.DataFrame(dataset, columns=columns_name)
+                dataset.to_csv(os.path.join(".", "data", "LunarLander_dataset.csv"), index=False)
+            return dataset
         else:
             try:
-                df = pd.read_csv(os.path.join(".", "data", "LunarLander_dataset.csv"))
-                return df
+                if data_format == "h5":
+                    dataset = MDPDataset.load(os.path.join(".", "data", "LunarLander_dataset.h5"))
+                    dataset = np.hstack((dataset.observations, dataset.actions[:, np.newaxis], dataset.rewards[:, np.newaxis]))
+                    columns_name = self.state_names + ["action", "reward"]
+                    dataset = pd.DataFrame(dataset, columns=columns_name)
+                else:
+                    dataset = pd.read_csv(os.path.join(".", "data", "LunarLander_dataset.csv"))
+                return dataset
             except:
                 print("This dataset is not existing, please generate it.")
 

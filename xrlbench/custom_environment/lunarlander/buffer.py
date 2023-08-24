@@ -7,14 +7,12 @@ import numpy as np
 
 
 class ReplayBuffer:
-    def __init__(self, action_size, buffer_size, batch_size):
+    def __init__(self, buffer_size, batch_size):
         """
         Class for storing and sampling experiences for training a RL agent.
 
         Parameters:
         -----------
-        action_size : int
-            The number of possible actions.
         buffer_size : int
             The maximum size of the replay buffer.
         batch_size : int
@@ -27,7 +25,6 @@ class ReplayBuffer:
         experience : collections.namedtuple
             A name tuple representing a single experience.
         """
-        self.action_size = action_size
         self.memory = deque(maxlen=buffer_size)
         self.batch_size = batch_size
         self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "next_state", "done"])
@@ -74,13 +71,6 @@ class ReplayBuffer:
             Whether the episodes have ended.
         """
         experiences = random.sample(self.memory, k=self.batch_size)
-        # states = torch.Tensor(np.array([e.state for e in experiences if e is not None])).unsqueeze(-1).float().to(self.device)
-        # actions = torch.Tensor(np.array([e.action for e in experiences if e is not None])).unsqueeze(-1).long().to(self.device)
-        # rewards = torch.Tensor(np.array([e.reward for e in experiences if e is not None])).unsqueeze(-1).float().to(self.device)
-        # next_states = torch.Tensor(np.array([e.next_state for e in experiences if e is not None])).unsqueeze(-1).float().to(self.device)
-        # dones = torch.Tensor(np.array([e.done for e in experiences if e is not None], dtype=np.uint8)).unsqueeze(-1).float().to(
-        #     self.device)
-        # return states, actions, rewards, next_states, dones
         states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(self.device)
         actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(self.device)
         rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(self.device)
