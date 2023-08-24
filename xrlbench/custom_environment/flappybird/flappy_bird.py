@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 from collections import deque
+from d3rlpy.dataset import MDPDataset
 from xrlbench.custom_environment.flappybird.agent import Agent
 
 
@@ -93,45 +94,42 @@ class FlappyBird:
         torch.save(self.agent.qnetwork_local.state_dict(), os.path.join(".", "model", "FlappyBird.pth"))
         return self.agent.qnetwork_local
 
-    def get_dataset(self, generate=False, n_episodes=500, max_t=1000):
-        """
-        Get the dataset for the Flappy Bird environment.
-
-        Parameters:
-        -----------
-        generate : bool
-            Whether to generate a new dataset or use an existing one.
-        n_episode : int
-            The number of episodes to generate the dataset from.
-        max_t : int
-            The maximum number of timesteps per episode.
-
-        Returns:
-        --------
-        df : pandas.DataFrame
-            The dataset including state, action and reward.
-        """
+    def get_dataset(self, generate=False, episodes=500, max_t=1000, data_format="csv"):
         if generate:
-            self.agent.qnetwork_local.load_state_dict(torch.load(os.path.join(".", "model", "FlappyBird.pth")))
+            self.model.load_state_dict(torch.load(os.path.join(".", "model", "FlappyBird.pth")))
             data = []
-            for i in range(n_episodes):
+            for e in range(episodes):
                 state = self.env.reset()[0]
                 for t in range(max_t):
                     action = self.agent.act(state)
                     next_state, reward, done, _, _ = self.env.step(action)
-                    data.append({"state": np.array(state), "action": np.array([action]), "reward": np.array([reward])})
+                    data.append({"state": np.array(state), "action": np.array([action]), "reward": np.array([reward]), "terminal": np.array([done])})
                     state = next_state
                     if done:
                         break
-            data = [np.concatenate([row["state"], row["action"], row["reward"]], axis=0) for row in data]
-            columns_name = self.state_names + ["action", "reward"]
-            df = pd.DataFrame(data, columns=columns_name)
-            df.to_csv("./data/FlappyBird_dataset.csv", index=False)
-            return df
+            if data_format == "h5":
+                observations = np.vstack([row["state"] for row in data])
+                actions = np.vstack([row["action"] for row in data])
+                rewards = np.vstack([row["reward"] for row in data])
+                terminals = np.vstack([row["terminal"] for row in data])
+                dataset = MDPDataset(observations, actions, rewards, terminals)
+                dataset.dump(os.path.join(".", "data", "FlappyBird_dataset.h5"))
+            else:
+                dataset = [np.concatenate([row["state"], row["action"], row["reward"]], axis=0) for row in data]
+                columns_name = self.state_names + ["action", "reward"]
+                dataset = pd.DataFrame(dataset, columns=columns_name)
+                dataset.to_csv(os.path.join(".", "data", "FlappyBird_dataset.csv"), index=False)
+            return dataset
         else:
             try:
-                df = pd.read_csv(os.path.join(".", "data", "FlappyBird_dataset.csv"))
-                return df
+                if data_format == "h5":
+                    dataset = MDPDataset.load(os.path.join(".", "data", "FlappyBird_dataset.h5"))
+                    dataset = np.hstack((dataset.observations, dataset.actions[:, np.newaxis], dataset.rewards[:, np.newaxis]))
+                    columns_name = self.state_names + ["action", "reward"]
+                    dataset = pd.DataFrame(dataset, columns=columns_name)
+                else:
+                    dataset = pd.read_csv(os.path.join(".", "data", "FlappyBird_dataset.csv"))
+                return dataset
             except:
                 print("This dataset is not existing, please generate it.")
 
@@ -140,14 +138,3 @@ if __name__ == "__main__":
     bird = FlappyBird()
     bird.train_model()
 
-    # env = gym.make("FlappyBird-v0")
-    # obs, _ = env.reset()
-    #
-    # while True:
-    #     action = env.action_space.sample()
-    #     print(action)
-    #     obs, reward, terminated, _, info = env.step(action)
-    #     print(obs, reward)
-    #     if terminated:
-    #         break
-    # env.close()
