@@ -47,7 +47,7 @@ class Agent:
         self.qnetwork_local = QNetwork(state_size, action_size).to(self.device)
         self.qnetwork_target = QNetwork(state_size, action_size).to(self.device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=LR)
-        self.memory = ReplayBuffer(action_size, buffer_size=BUFFER_SIZE, batch_size=BATCH_SIZE)
+        self.memory = ReplayBuffer(buffer_size=BUFFER_SIZE, batch_size=BATCH_SIZE)
         self.t_step = 0
 
     def inference(self, state):
