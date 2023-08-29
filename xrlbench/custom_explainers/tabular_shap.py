@@ -92,12 +92,12 @@ class TabularSHAP:
         X_enc = X.copy()
         for i in range(len(self.categorical_names)):
             encoder = self.encoders[i]
-            if X_enc[self.categorical_states[i]].dtype != object:
-                X_enc[self.categorical_states[i]] = X_enc[self.categorical_states[i]].astype(str)
+            if X_enc[self.categorical_names[i]].dtype != object:
+                X_enc[self.categorical_names[i]] = X_enc[self.categorical_names[i]].astype(str)
                 X[self.categorical_names[i]] = X[self.categorical_names[i]].astype(str)
-            X_enc.loc[~X_enc[self.categorical_states[i]].isin(encoder.classes_), self.categorical_names[i]] = 'unknow'
+            X_enc.loc[~X_enc[self.categorical_names[i]].isin(encoder.classes_), self.categorical_names[i]] = 'unknow'
             encoder.classes_ = np.append(encoder.classes_, 'unknow')
-            X_enc[self.categorical_states[i]] = encoder.transform(X_enc[self.categorical_states[i]])
+            X_enc[self.categorical_names[i]] = encoder.transform(X_enc[self.categorical_names[i]])
         shap_values = self.explainer(X_enc)
         shap_values.display_data = X.values
         return shap_values
