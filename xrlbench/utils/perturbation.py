@@ -39,13 +39,24 @@ def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None
     if std < 0:
         raise ValueError("Standard deviation must be non-negative.")
 
-    for i in range(X.shape[0]):
-        for ind in perturbed_inds[i]:
-            if ind in categorical_feature_inds:
-                X[i, ind] = random.choice(np.unique(X[:, ind]))
-            else:
-                noise = np.random.normal(mean, std)
-                X[i, ind] += noise
+    if len(X.shape) == 2:
+        for i in range(X.shape[0]):
+            for ind in perturbed_inds[i]:
+                if ind in categorical_feature_inds:
+                    X[i, ind] = random.choice(np.unique(X[:, ind]))
+                else:
+                    noise = np.random.normal(mean, std)
+                    X[i, ind] += noise
+    elif len(X.shape) == 4:
+        for i in range(X.shape[0]):
+            for c in range(X[i].shape[0]):
+                flat = X[i, c].flatten()
+                for ind in perturbed_inds[i]:
+                    noise = np.random.normal(mean, std)
+                    flat[ind] += noise
+                X[i, c] = flat.reshape(X.shape[2], X.shape[3])
+    else:
+        raise ValueError("Invalid shape for inputs.")
     return X
 
     # if categorical_state_inds is None:
