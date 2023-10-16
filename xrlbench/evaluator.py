@@ -7,7 +7,12 @@ valid_metrics = {
     "AUM": xrlbench.custom_metrics.AUM,
     "PGI": xrlbench.custom_metrics.PGI,
     "PGU": xrlbench.custom_metrics.PGU,
-    "RIS": xrlbench.custom_metrics.RIS
+    "RIS": xrlbench.custom_metrics.RIS,
+    "ImageAIM": xrlbench.custom_metrics.ImageAIM,
+    "ImageAUM": xrlbench.custom_metrics.ImageAUM,
+    "ImagePGI": xrlbench.custom_metrics.ImagePGI,
+    "ImagePGU": xrlbench.custom_metrics.ImagePGU,
+    "ImageRIS": xrlbench.custom_metrics.ImageRIS
 }
 
 

@@ -5,11 +5,16 @@ import xrlbench.custom_explainers
 valid_explainers = {
     "tabularShap": xrlbench.custom_explainers.TabularSHAP,
     "sarfa": xrlbench.custom_explainers.SARFA,
-    "visualizeSaliency": xrlbench.custom_explainers.VisualizeSaliency,
+    "perturbationSaliency": xrlbench.custom_explainers.PerturbationSaliency,
     "tabularLime": xrlbench.custom_explainers.TabularLime,
     "deepShap": xrlbench.custom_explainers.DeepSHAP,
     "gradientShap": xrlbench.custom_explainers.GradientSHAP,
-    "integratedGradient": xrlbench.custom_explainers.IntegratedGradient
+    "integratedGradient": xrlbench.custom_explainers.IntegratedGradient,
+    "imagePerturbationSaliency": xrlbench.custom_explainers.ImagePerturbationSaliency,
+    "imageSarfa": xrlbench.custom_explainers.ImageSARFA,
+    "imageDeepShap": xrlbench.custom_explainers.ImageDeepSHAP,
+    "imageGradientShap": xrlbench.custom_explainers.ImageGradientSHAP,
+    "imageIntegratedGradient": xrlbench.custom_explainers.ImageIntegratedGradient
 }
 
 
@@ -39,7 +44,7 @@ class Explainer:
                 f"This explainer is not supported at the moment. Explainers supported are {list(valid_explainers.keys())}"
             )
         self.method = method
-        self.state = state
+        self.state = state/255 if method.find("image") != -1 else state
         self.action = action
         self.explainer = valid_explainers[method](X=state, y=action, **kwargs)
 
