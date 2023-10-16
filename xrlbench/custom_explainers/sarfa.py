@@ -77,10 +77,6 @@ class SARFA:
             if name in self.categorical_names:
                 feature[i] = random.choice(np.unique(self.X[:, i]))
             else:
-                # feature_min, feature_max = np.min(self.X[:, i]), np.max(self.X[:, i])
-                # feature_mean, feature_std = np.mean(self.X[:, i]), np.std(self.X[:, i])
-                # feature_noised = max(min(torch.normal(feature_mean, feature_std, size=(1,)).cpu().item(), feature_max), feature_min)
-                # feature[i] = feature_noised
                 noise = np.random.normal(mean, std)
                 feature[i] += noise
 
@@ -152,10 +148,135 @@ class SARFA:
         return self.saliency_scores
 
 
+class ImageSARFA:
+    def __init__(self, X, y, model):
+        """
+        Class for generating image saliency scores using SARFA (Specific and Relevant Feature Attribution). https://arxiv.org/abs/1912.12191
 
+        Parameters:
+        -----------
+        X : numpy.ndarray
+            The input data of shape (n_samples, n_channels, n_widths, n_heights).
+        y : numpy.ndarray or pandas.Series
+            The label of the input data of shape (n_sample,).
+        model : pytorch model
+            The trained reinforcement learning model.
 
+        Attributes:
+        -----------
+        feature_dim : int
+            The number of feature in the input data.
+        saliency_scores : numpy.ndarray
+            The saliency scores of the input data of feature (n_samples, n_samples, n_features).
 
+        Methods:
+        --------
+        _add_noise(feature):
+            Add noise to the input feature data.
+        _calculate_saliency(feature):
+            Calculate the saliency score of the input feature data.
+        explain(X=None):
+            Explain the input feature data by calculating the saliency scores.
+        """
+        # Check inputs
+        if not isinstance(X, np.ndarray):
+            raise TypeError("X must be a numpy.ndarray")
+        if not isinstance(y, (np.ndarray, pd.Series)):
+            raise TypeError("y must be a numpy.ndarray or pandas.Series")
+        self.X = X
+        self.y = y.values if isinstance(y, pd.Series) else y
+        self.model = model
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.width = X.shape[2]
+        self.height = X.shape[3]
+        self.saliency_scores = np.zeros((len(X), self.width, self.height))
 
+    def _add_noise(self, feature, center, mean=0, std=0.05):
+        """
+        Add noise to the input feature data.
+
+        Parameters:
+        -----------
+        feature : numpy.ndarray
+            The input feature data of shape (n_channels, n_widths, n_heights).
+        center : list
+            The center coordinates of the circle.
+
+        Returns:
+        --------
+        feature_backend : numpy.ndarray
+            The noised feature data of shape (n_channels, n_features, n_features).
+        """
+        feature_backend = copy.deepcopy(feature)
+        noise = np.random.normal(mean, std, size=feature.shape)
+        feature_backend[:, center[0], center[1]] += noise[:, center[0], center[1]]
+        # for c in range(0, feature.shape[0]):
+        #     noise = np.random.normal(mean, std)
+        #     feature_backend[c][center[0], center[1]] += noise
+        return feature_backend
+
+    def _calculate_saliency(self, feature):
+        """
+        Calculate the image saliency score of the input feature data according to specificity and relevance. score = 2*dP*K/(K + dP).
+
+        Parameters:
+        -----------
+        feature : numpy.ndarray
+            The input feature data of shape (n_channels, n_widths, n_heights).
+        Return:
+        -------
+        score : numpy.ndarray
+            The saliency scores of the input feature data of shape (n_widths, n_heights).
+        """
+        score = np.zeros((self.width, self.height))
+        with torch.no_grad():
+            Q = self.model(torch.from_numpy(feature).float().unsqueeze(0).to(self.device))
+        Q = Q.squeeze().cpu().numpy()
+        Q_P_log = Q - np.logaddexp.reduce(Q)
+        Q_P = np.exp(Q_P_log)
+        Q_idx = np.argmax(Q_P)
+        for i in range(0, feature.shape[1]):
+            for j in range(0, feature.shape[2]):
+                feature_noised = self._add_noise(feature, center=[i, j])
+                with torch.no_grad():
+                    Q_perturbed = self.model(torch.from_numpy(feature_noised).float().unsqueeze(0).to(self.device))
+                Q_perturbed = Q_perturbed.squeeze().cpu().numpy()
+                Q_perturbed_P_log = Q_perturbed - logsumexp(Q_perturbed)
+                Q_perturbed_P = np.exp(Q_perturbed_P_log)
+                dP = Q_P[Q_idx] - Q_perturbed_P[Q_idx]
+                if dP > 0:
+                    P_rem = np.append(Q_P[:Q_idx], Q_P[Q_idx + 1:])
+                    P_perturbed_rem = np.append(Q_perturbed_P[:Q_idx], Q_perturbed_P[Q_idx + 1:])
+                    P_KL = entropy(P_rem, P_perturbed_rem)
+                    K = 1. / (1. + P_KL)
+                    score[i, j] = 2 * dP * K / (K + dP)
+        return score
+
+    def explain(self, X=None, batch_size=1):
+        """
+        Explain the input feature data by calculating the saliency scores.
+
+        Parameters:
+        -----------
+        X : numpy.ndarray, optional (default=None)
+            The input data of shape (n_samples, n_channels, n_widths, n_heights).
+        batch_size : int, optional (default=1)
+            The batch size for processing the input data.
+
+        Returns:
+        --------
+        saliency_scores : numpy.ndarray
+            The saliency scores of the input data of feature (n_samples, n_widths, n_heights).
+        """
+        if X is None:
+            X = self.X
+        saliency_scores = np.zeros((len(X), X.shape[2], X.shape[3]))
+        for i in tqdm(range(0, len(X), batch_size), ascii=True):
+            batch = X[i:i + batch_size]
+            scores = np.array([self._calculate_saliency(x) for x in batch])
+            saliency_scores[i:i + batch_size] = scores
+        self.saliency_scores = saliency_scores
+        return self.saliency_scores
 
 
 

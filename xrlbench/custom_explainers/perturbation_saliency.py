@@ -102,10 +102,10 @@ class PerturbationSaliency:
             Q = self.model(torch.from_numpy(feature).float().unsqueeze(0).to(self.device))
             Q_perturbed = self.model(torch.from_numpy(feature_noised).float().unsqueeze(0).to(self.device))
         Q = np.squeeze(Q.cpu().numpy())
-        Q_max_idx = np.argmax(Q)
+        # Q_max_idx = np.argmax(Q)
         Q_perturbed = np.squeeze(Q_perturbed.cpu().numpy())
-        score = np.abs(Q_perturbed[:, Q_max_idx] - Q[Q_max_idx])
-        return score
+        score = [np.sqrt(np.sum(np.square(Q - Q_perturbed[i]))) for i in range(Q_perturbed.shape[0])]
+        return np.array(score)
 
     def explain(self, X=None, batch_size=128):
         """
@@ -137,19 +137,52 @@ class PerturbationSaliency:
 
 class ImagePerturbationSaliency:
     def __init__(self, X, y, model):
+        """
+        Class for calculating image perturbation saliency scores.
 
+        Parameters:
+        -----------
+        X : numpy.ndarray
+            The input images.
+        y : numpy.ndarray or pandas.Series
+            The labels corresponding to the input images.
+        model : torch.nn.Module
+            The model used for prediction.
+
+        Attributes:
+        -----------
+        saliency_scores : numpy.ndarray
+            The saliency scores of the input images.
+        """
         # Check inputs
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("X must be a pandas.DataFrame")
+        if not isinstance(X, np.ndarray):
+            raise TypeError("X must be a numpy.ndarray")
         if not isinstance(y, (np.ndarray, pd.Series)):
             raise TypeError("y must be a numpy.ndarray or pandas.Series")
-        self.X = X.values
+        self.X = X
         self.y = y.values if isinstance(y, pd.Series) else y
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.saliency_scores = np.zeros((len(X), X.shape[2], X.shape[3]))
 
     def _get_mask(self, center, size, r=5):
+        """
+        Generate a circular mask.
+
+        Parameters:
+        -----------
+        center : list
+            The center coordinates of the circle.
+        size : list
+            The size of the mask.
+        r : int
+            The radius of the circle.
+
+        Returns:
+        --------
+        numpy.ndarray
+            The circular mask.
+        """
         y, x = np.ogrid[-center[0]:size[0]-center[0], -center[1]:size[1]-center[1]]
         keep = x*x + y*y <= 1
         mask = np.zeros(size)
@@ -158,25 +191,72 @@ class ImagePerturbationSaliency:
         return mask / mask.max()
 
     def _add_noise(self, feature, mask, r=3):
+        """
+        Add noise to the feature using the mask.
+
+        Parameters:
+        -----------
+        feature : numpy.ndarray
+            The input feature.
+        mask : numpy.ndarray
+            The mask to be applied.
+        r : int
+            The sigma value for the Gaussian filter.
+
+        Returns:
+        --------
+        numpy.ndarray
+            The feature with added noise.
+        """
         feature_backend = copy.deepcopy(feature)
         for c in range(0, feature.shape[0]):
-            feature_backend[c] = feature_backend[c]*(1-mask) + gaussian_filter(feature_backend[c], sigma=r)*mask
+            feature_backend[c] = feature_backend[c] * (1 - mask) + gaussian_filter(feature_backend[c], sigma=r) * mask
         return feature_backend
 
     def _calculate_saliency(self, feature):
+        """
+        Calculate the saliency scores for a given feature.
+
+        Parameters:
+        -----------
+        feature : numpy.ndarray
+            The input feature.
+
+        Returns:
+        --------
+        numpy.ndarray
+            The saliency scores for the feature.
+        """
         scores = np.zeros((feature.shape[1], feature.shape[2]))
         with torch.no_grad():
             Q = self.model(torch.from_numpy(feature).float().unsqueeze(0).to(self.device))
+        Q = np.squeeze(Q.cpu().numpy())
         for i in range(0, feature.shape[1]):
             for j in range(0, feature.shape[2]):
                 mask = self._get_mask(center=[i, j], size=[feature.shape[1], feature.shape[2]], r=5)
                 feature_noised = self._add_noise(feature, mask, r=3)
                 with torch.no_grad():
                     Q_perturbed = self.model(torch.from_numpy(feature_noised).float().unsqueeze(0).to(self.device))
-                scores[i, j] = (Q - Q_perturbed).pow(2).sum().mul_(.5).data[0]
+                Q_perturbed = np.squeeze(Q_perturbed.cpu().numpy())
+                scores[i, j] = np.sqrt(np.sum(np.square(Q - Q_perturbed)))
         return scores
 
-    def explain(self, X=None, batch_size=128):
+    def explain(self, X=None, batch_size=1):
+        """
+        Compute the saliency scores for the input images.
+
+        Parameters:
+        -----------
+        X : numpy.ndarray, optional
+            The input images. If not provided, the images from the initialization will be used.
+        batch_size : int, optional
+            The batch size for computing the seliency scores.
+
+        Returns:
+        --------
+
+
+        """
         if X is None:
             X = self.X
         saliency_scores = np.zeros((len(X), X.shape[2], X.shape[3]))
