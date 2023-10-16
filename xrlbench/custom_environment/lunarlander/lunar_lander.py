@@ -116,9 +116,9 @@ class LunarLander:
             for i in range(n_episodes):
                 state = self.env.reset()[0]
                 for t in range(max_t):
-                    action = self.agent.act(state)
+                    action = self.agent.act(np.array(state))
                     next_state, reward, done, _, _ = self.env.step(action)
-                    data.append({"state": np.array(state), "action": np.array([action]), "reward": np.array([reward])})
+                    data.append({"state": np.array(state), "action": np.array([action]), "reward": np.array([reward]), "terminal": np.array([done])})
                     state = next_state
                     if done:
                         break
@@ -129,12 +129,15 @@ class LunarLander:
                 terminals = np.vstack([row["terminal"] for row in data])
                 dataset = MDPDataset(observations, actions, rewards, terminals)
                 dataset.dump(os.path.join(".", "data", "LunarLander_dataset.h5"))
-            else:
+                return dataset
+            elif data_format == "csv":
                 dataset = [np.concatenate([row["state"], row["action"], row["reward"]], axis=0) for row in data]
                 columns_name = self.state_names + ["action", "reward"]
                 dataset = pd.DataFrame(dataset, columns=columns_name)
                 dataset.to_csv(os.path.join(".", "data", "LunarLander_dataset.csv"), index=False)
-            return dataset
+                return dataset
+            else:
+                raise NotImplementedError("This data format is not supported at the moment.")
         else:
             try:
                 if data_format == "h5":
@@ -142,9 +145,12 @@ class LunarLander:
                     dataset = np.hstack((dataset.observations, dataset.actions[:, np.newaxis], dataset.rewards[:, np.newaxis]))
                     columns_name = self.state_names + ["action", "reward"]
                     dataset = pd.DataFrame(dataset, columns=columns_name)
-                else:
+                    return dataset
+                elif data_format == "csv":
                     dataset = pd.read_csv(os.path.join(".", "data", "LunarLander_dataset.csv"))
-                return dataset
+                    return dataset
+                else:
+                    raise NotImplementedError("This data format is not supported at the moment.")
             except:
                 print("This dataset is not existing, please generate it.")
 
