@@ -134,7 +134,6 @@ class BreakOut:
         if generate:
             data = []
             for i in range(n_episodes):
-                print("i:", i)
                 state = preprocess_state(self.env.reset()[0])
                 for t in range(max_t):
                     action = self.agent.act(np.array(state), inferring=True)
@@ -143,7 +142,6 @@ class BreakOut:
                     data.append({"state": np.array(state*255, dtype=np.uint8), "action": np.array([action]), "reward": np.array([reward]), "terminal": np.array([done])})
                     state = next_state
                     if done:
-                        print("t:", t)
                         break
             if data_format == "h5":
                 observations = np.vstack([row["state"] for row in data])
