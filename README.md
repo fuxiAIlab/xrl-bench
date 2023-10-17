@@ -2,10 +2,10 @@
 
 # XRL-Bench: A benchmark for Explainable Reinforcement Learning
 
-**XRL-Bench** is a comprehensive benchmark suite for evaluating eXplainable reinforcement learning (XRL) methods. It provides a unified platform for researches and practitioners to develop, test, and compare their feature importance-based XRL algorithms. XRL-Bench includes a wide range of environments, explainers, and evaluation methods to facilitate the development of state-of-the-art XRL techniques.
+**XRL-Bench** is a comprehensive benchmark suite for evaluating eXplainable Reinforcement Learning (XRL) methods. It provides a unified platform for researches and practitioners to develop, test, and compare their feature importance-based XRL algorithms. XRL-Bench includes a wide range of environments, explainers, and evaluation methods to facilitate the development of state-of-the-art XRL techniques.
 
 ## Key Features
-- **Environments**: XRL-Bench includes diverse open-source environments based on tabular numerical states and image data states, such as Lunar Lander, CartPole, and Flappy Bird, covering a wide range of reinforcement learning tasks.
+- **Environments**: XRL-Bench includes diverse open-source environments based on tabular data inputs and image data inputs, such as Lunar Lander, CartPole, and Flappy Bird for tabular inputs, and Breakout, Pong for image inputs, covering a wide range of reinforcement learning tasks.
 - **Explainers**: The benchmark supports various feature importance-based explainers like TabularSHAP, TabularLIME, SARFA, VisualizeSaliency, IntegratedGradient, DeepSHAP and GradientSHAP, to understand the decision-making process of the RL agents.
 - **Evaluation Methods**: XRL-Bench provides multiple evaluation methods, including but not limited to Fidelity-focused methods such as AIM, AUM, PGI and PGU, and Stability-focused methods such as RIS. Additionally, XRL-Bench includes human evaluations for more intuitive and comprehensive evaluation results.
 
