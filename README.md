@@ -43,6 +43,6 @@ We welcome contirbutions to XRL-Bench! If you'd like to contirbute, please follo
 4. Submit a pull request and wait for a review from the maintainers.
 
 ## License
-XRL-Bench is under MIT license.
+XRL-Bench is under MIT license. For more information, please see the LICENSE file.
 
 
