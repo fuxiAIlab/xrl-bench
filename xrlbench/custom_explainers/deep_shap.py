@@ -58,7 +58,7 @@ class DeepSHAP:
         if X is None:
             X = self.X
         X = X.values if isinstance(X, pd.DataFrame) else X
-        shap_values = self.explainer.shap_values(torch.from_numpy(X.values).float().to(self.device))
+        shap_values = self.explainer.shap_values(torch.from_numpy(X).float().to(self.device))
         return np.array(shap_values).transpose((1, 2, 0))
 
 
