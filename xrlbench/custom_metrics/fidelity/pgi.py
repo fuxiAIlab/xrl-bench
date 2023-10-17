@@ -30,7 +30,7 @@ class PGI:
             The true labels for the input data.
         feature_weights : numpy.ndarray or shap.Explanation
             The feature weights computed using an XRL method.
-        k : int, optional (default=5)
+        k : int, optional (default=3)
             The number of top feature to mask.
 
         Returns:
