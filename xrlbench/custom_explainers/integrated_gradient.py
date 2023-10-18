@@ -60,7 +60,7 @@ class IntegratedGradient:
         avg_grads = np.average(all_intgrads, axis=0)
         return avg_grads
 
-    def explain(self, X=None, y=None, batch_size=128):
+    def explain(self, X=None, y=None, batch_size=1):
         """
         Explain the input data.
 
