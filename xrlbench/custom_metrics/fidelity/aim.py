@@ -56,7 +56,6 @@ class AIM:
         for i in range(X.shape[0]):
             masked_X[i][weights_ranks[i]] = 0
         y_pred = [np.argmax(self.environment.agent.inference(masked_X[i]).data.numpy()) for i in range(masked_X.shape[0])]
-        # y_pred = [self.environment.agent.act(masked_X[i]) for i in range(masked_X.shape[0])]
         accuracy = np.mean(y_pred == y)
         return accuracy
 
@@ -73,7 +72,7 @@ class ImageAIM:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=30):
+    def evaluate(self, X, y, feature_weights, k=10):
         """
         Evaluate the performance of XRL methods using AIM metric.
 
@@ -85,7 +84,7 @@ class ImageAIM:
             The true labels for the input data.
         feature_weights : numpy.ndarray or shap.Explanation
             The feature weights computed using an XRL method.
-        k : int, optional (default=5)
+        k : int, optional (default=10)
             The number of top feature to mask.
 
         Returns:
@@ -108,10 +107,7 @@ class ImageAIM:
             feature_weights = [feature_weights[i, :, :, int(y[i])] for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 3:
             raise ValueError("Invalid shape for feature_weights.")
-        # print(np.sum(feature_weights))
-        # print(feature_weights)
         weights_ranks = [np.argsort(-feature_weights[i], axis=None)[:k] for i in range(len(feature_weights))]
-        # print(weights_ranks)
         masked_X = X.copy()
         for i in range(X.shape[0]):
             for c in range(len(masked_X[i])):
@@ -119,6 +115,5 @@ class ImageAIM:
                 flat[weights_ranks[i]] = 0
                 masked_X[i][c] = flat.reshape((masked_X.shape[2], masked_X.shape[3]))
         y_pred = [np.argmax(self.environment.agent.inference(masked_X[i]).data.numpy()) for i in range(masked_X.shape[0])]
-        # y_pred = [self.environment.agent.act(masked_X[i]) for i in range(masked_X.shape[0])]
         accuracy = np.mean(y_pred == y)
         return accuracy
