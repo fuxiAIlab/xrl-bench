@@ -34,6 +34,31 @@ evalutor = Evaluator(metric="AIM", environment=env)
 aim = evaluator.evaluate(states, actions, shap_values, k=1)
 ```
 
+## LeaderBoards
+We maintain two leaderboards to compare the performance of explainers for both types of data inputs under various evaluation metrics.
+#### Tabular inputs (LunarLander)
+
+| Explainer | AIM (k=3) | AUM (k=3)| PGI (k=3) | PGU (k=3) | RIS |
+| --- | --- | --- | --- | --- | --- |
+| TabularSHAP | **0.076** | **0.807** | **3.038** | **2.12** | 11.072 |
+| DeepSHAP | 0.463 | 0.434 | 2.15 | 2.985 | 76.522 |
+| GradientSHAP | 0.355 | 0.434 | 2.418 | 2.922 | 74.817 |
+| IntegratedGradient | 0.354 | 0.401 | 2.362 | 2.85 | 63.237 |
+| SARFA | 0.388 | 0.35 | 2.141 | 2.568 | **3.296** |
+| PerturbationSaliency | 0.348 | 0.314 | 2.126 | 2.837 | 157.471 |
+| TabularLIME | 0.303 | 0.388 | 2.646 | 2.287 | 91.109 |
+
+<!--#### Image inputs (Breakout)-->
+
+<!--| Explainer  | AIM | AUM | PGI | PGU | RIS |-->
+<!--| --- | --- | --- | --- | --- | --- |-->
+<!--|  |  |  |  |  |  |-->
+<!--|  |  |  |  |  |  |-->
+<!--|  |  |  |  |  |  |-->
+<!--|  |  |  |  |  |  |-->
+<!--|  |  |  |  |  |  |-->
+
+
 ## Contributing
 We welcome contirbutions to XRL-Bench! If you'd like to contirbute, please follow these guidelines:
 
@@ -43,6 +68,6 @@ We welcome contirbutions to XRL-Bench! If you'd like to contirbute, please follo
 4. Submit a pull request and wait for a review from the maintainers.
 
 ## License
-XRL-Bench is under MIT license. For more information, please see the LICENSE file.
+XRL-Bench is under MIT license.
 
 
