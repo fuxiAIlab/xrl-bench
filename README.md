@@ -40,23 +40,23 @@ We maintain two leaderboards to compare the performance of explainers for both t
 
 | Explainer | AIM (k=3) | AUM (k=3)| PGI (k=3) | PGU (k=3) | RIS |
 | --- | --- | --- | --- | --- | --- |
-| TabularSHAP | **0.076** | **0.807** | **3.038** | **2.12** | 11.072 |
-| DeepSHAP | 0.463 | 0.434 | 2.15 | 2.985 | 76.522 |
-| GradientSHAP | 0.355 | 0.434 | 2.418 | 2.922 | 74.817 |
-| IntegratedGradient | 0.354 | 0.401 | 2.362 | 2.85 | 63.237 |
-| SARFA | 0.388 | 0.35 | 2.141 | 2.568 | **3.296** |
-| PerturbationSaliency | 0.348 | 0.314 | 2.126 | 2.837 | 157.471 |
-| TabularLIME | 0.303 | 0.388 | 2.646 | 2.287 | 91.109 |
+| TabularSHAP | **0.076** | **0.807** | 3.134 | 1.911 | 8.449 |
+| DeepSHAP | 0.182 | 0.744 | **3.54** | 1.557 | 81.932 |
+| GradientSHAP | 0.175 | 0.674 | 3.504 | 1.575 | 63.765 |
+| IntegratedGradient | 0.175 | 0.667 | 3.484 | **1.554** | 70.208 |
+| SARFA | 0.379 | 0.352 | 2.231 | 2.647 | **2.55** |
+| PerturbationSaliency | 0.362 | 0.316 | 2.154 | 2.822 | 100.62 |
+| TabularLIME | 0.304 | 0.499 | 2.845 | 1.826 | 77.209 |
 
-<!--#### Image inputs (Breakout)-->
+#### Image inputs (Breakout)
 
-<!--| Explainer  | AIM | AUM | PGI | PGU | RIS |-->
-<!--| --- | --- | --- | --- | --- | --- |-->
-<!--|  |  |  |  |  |  |-->
-<!--|  |  |  |  |  |  |-->
-<!--|  |  |  |  |  |  |-->
-<!--|  |  |  |  |  |  |-->
-<!--|  |  |  |  |  |  |-->
+| Explainer  | AIM (k=50) | AUM (k=50) | PGI (k=50) | PGU (k=50) | RIS |
+| --- | --- | --- | --- | --- | --- |
+| DeepSHAP | 0.186 | 0.809 | 0.391 | 0 | 2.49 |
+| GradientSHAP | 0.247 | 0.809 | 0.421 | 0 | 12.923 |
+| IntegratedGradient | 0.728 | 0.798 | 0.085 | 0.034 | 0.449 |
+| SARFA | 0.663 | 0.399 | 0.383 | 0.218 |  |
+| PerturbationSaliency | 0.281 | 0.809 | 0.594 | 0 |  |
 
 
 ## Contributing
