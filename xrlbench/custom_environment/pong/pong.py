@@ -4,14 +4,26 @@ import gymnasium as gym
 import torch
 import os
 import numpy as np
-import pandas as pd
 import torchvision.transforms as T
 from collections import deque
 from d3rlpy.dataset import MDPDataset
-from xrlbench.custom_environment.breakout.agent import Agent
+from xrlbench.custom_environment.pong.agent import Agent
 
 
 def preprocess_state(state):
+    """
+    Preprocess the image state.
+
+    Parameters:
+    -----------
+    state : numpy.ndarray
+        The input state.
+
+    Returns:
+    --------
+    torch.Tensor
+        The preprocessed state.
+    """
     return T.Compose([T.ToPILImage(), T.Resize((84, 84)), T.ToTensor()])(state).unsqueeze(0)
 
 
@@ -38,6 +50,7 @@ class Pong:
         self.agent = Agent(action_size=self.env.action_space.n)
         self.model = self.agent.policy_network
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.categorical_states = None
         self.load_model()
 
     def load_model(self):
@@ -99,7 +112,7 @@ class Pong:
         torch.save(self.agent.policy_network.state_dict(), os.path.join(".", "model", "Pong.pth"))
         return self.agent.policy_network
 
-    def get_dataset(self, generate=False, n_episodes=500, max_t=10000, data_format="h5"):
+    def get_dataset(self, generate=False, n_episodes=4, max_t=1000, data_format="h5"):
         """
         Get the dataset for the Break Out environment.
 
@@ -118,13 +131,13 @@ class Pong:
             The dataset including state, action and reward.
         """
         if generate:
-            self.agent.q_network.load_state_dict(torch.load(os.path.join(".", "model", "Pong.pth")))
             data = []
             for i in range(n_episodes):
                 state = preprocess_state(self.env.reset()[0])
                 for t in range(max_t):
                     action = self.agent.act(np.array(state), inferring=True)
                     next_state, reward, done, _, _ = self.env.step(action)
+                    next_state = preprocess_state(next_state)
                     data.append({"state": np.array(state*255, dtype=np.uint8), "action": np.array([action]), "reward": np.array([reward]), "terminal": np.array([done])})
                     state = next_state
                     if done:
