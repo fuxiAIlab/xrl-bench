@@ -55,8 +55,8 @@ We maintain two leaderboards to compare the performance of explainers for both t
 | DeepSHAP | 0.186 | 0.809 | 0.391 | 0 | 2.49 |
 | GradientSHAP | 0.247 | 0.809 | 0.421 | 0 | 12.923 |
 | IntegratedGradient | 0.728 | 0.798 | 0.085 | 0.034 | 0.449 |
-| SARFA | 0.663 | 0.399 | 0.383 | 0.218 |  |
-| PerturbationSaliency | 0.281 | 0.809 | 0.594 | 0 |  |
+| SARFA | 0.663 | 0.399 | 0.383 | 0.218 | 112.54 |
+| PerturbationSaliency | 0.281 | 0.809 | 0.594 | 0 | 309.527 |
 
 
 ## Contributing
