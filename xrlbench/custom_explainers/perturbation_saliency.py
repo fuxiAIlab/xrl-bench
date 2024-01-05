@@ -58,6 +58,7 @@ class PerturbationSaliency:
         self.saliency_scores = np.zeros((len(X), X.shape[1]))
         self.feature_dim = X.shape[1]
         self.categorical_names = categorical_names if categorical_names else []
+        self.std = np.std(self.X, axis=0)
 
     def _add_noise(self, feature, mean=0, std=0.05):
         """
@@ -79,7 +80,7 @@ class PerturbationSaliency:
                 feature[i] = random.choice(np.unique(self.X[:, i]))
             else:
                 noise = np.random.normal(mean, std)
-                feature[i] += noise
+                feature[i] += noise*self.std[i]
         res = np.tile(feature_backend, (self.feature_dim, 1))
         res[np.arange(self.feature_dim), np.arange(self.feature_dim)] = feature
         return res
@@ -254,8 +255,8 @@ class ImagePerturbationSaliency:
 
         Returns:
         --------
-
-
+        numpy.ndarray
+            The saliency scores for the feature.
         """
         if X is None:
             X = self.X
@@ -266,9 +267,6 @@ class ImagePerturbationSaliency:
             saliency_scores[i:i+batch_size] = scores
         self.saliency_scores = saliency_scores
         return self.saliency_scores
-
-
-
 
 
 
