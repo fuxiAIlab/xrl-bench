@@ -6,6 +6,7 @@ import random
 from tqdm import tqdm
 from scipy.stats import entropy
 from scipy.special import logsumexp
+from scipy.ndimage.filters import gaussian_filter
 import numpy as np
 import pandas as pd
 
@@ -57,6 +58,7 @@ class SARFA:
         self.saliency_scores = np.zeros((len(X), X.shape[1]))
         self.feature_dim = X.shape[1]
         self.categorical_names = categorical_names if categorical_names else []
+        self.std = np.std(self.X, axis=0)
 
     def _add_noise(self, feature, mean=0, std=0.05):
         """
@@ -78,7 +80,7 @@ class SARFA:
                 feature[i] = random.choice(np.unique(self.X[:, i]))
             else:
                 noise = np.random.normal(mean, std)
-                feature[i] += noise
+                feature[i] += noise * self.std[i]
 
         res = np.tile(feature_backend, (self.feature_dim, 1))
         res[np.arange(self.feature_dim), np.arange(self.feature_dim)] = feature
@@ -191,28 +193,52 @@ class ImageSARFA:
         self.height = X.shape[3]
         self.saliency_scores = np.zeros((len(X), self.width, self.height))
 
-    def _add_noise(self, feature, center, mean=0, std=0.05):
+    def _get_mask(self, center, size, r=3):
         """
-        Add noise to the input feature data.
+        Generate a circular mask.
+
+        Parameters:
+        -----------
+        center : list
+            The center coordinates of the circle.
+        size : list
+            The size of the mask.
+        r : int
+            The radius of the circle.
+
+        Returns:
+        --------
+        numpy.ndarray
+            The circular mask.
+        """
+        y, x = np.ogrid[-center[0]:size[0] - center[0], -center[1]:size[1] - center[1]]
+        keep = x * x + y * y <= 1
+        mask = np.zeros(size)
+        mask[keep] = 1
+        mask = gaussian_filter(mask, sigma=r)
+        return mask / mask.max()
+
+    def _add_noise(self, feature, mask, r=3):
+        """
+        Add noise to the feature using the mask.
 
         Parameters:
         -----------
         feature : numpy.ndarray
-            The input feature data of shape (n_channels, n_widths, n_heights).
-        center : list
-            The center coordinates of the circle.
+            The input feature.
+        mask : numpy.ndarray
+            The mask to be applied.
+        r : int
+            The sigma value for the Gaussian filter.
 
         Returns:
         --------
-        feature_backend : numpy.ndarray
-            The noised feature data of shape (n_channels, n_features, n_features).
+        numpy.ndarray
+            The feature with added noise.
         """
         feature_backend = copy.deepcopy(feature)
-        noise = np.random.normal(mean, std, size=feature.shape)
-        feature_backend[:, center[0], center[1]] += noise[:, center[0], center[1]]
-        # for c in range(0, feature.shape[0]):
-        #     noise = np.random.normal(mean, std)
-        #     feature_backend[c][center[0], center[1]] += noise
+        for c in range(0, feature.shape[0]):
+            feature_backend[c] = feature_backend[c] * (1 - mask) + gaussian_filter(feature_backend[c], sigma=r) * mask
         return feature_backend
 
     def _calculate_saliency(self, feature):
@@ -237,7 +263,9 @@ class ImageSARFA:
         Q_idx = np.argmax(Q_P)
         for i in range(0, feature.shape[1]):
             for j in range(0, feature.shape[2]):
-                feature_noised = self._add_noise(feature, center=[i, j])
+                # feature_noised = self._add_noise(feature, center=[i, j])
+                mask = self._get_mask(center=[i, j], size=[feature.shape[1], feature.shape[2]], r=5)
+                feature_noised = self._add_noise(feature, mask, r=3)
                 with torch.no_grad():
                     Q_perturbed = self.model(torch.from_numpy(feature_noised).float().unsqueeze(0).to(self.device))
                 Q_perturbed = Q_perturbed.squeeze().cpu().numpy()
