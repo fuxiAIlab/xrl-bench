@@ -36,6 +36,7 @@ class GradientSHAP:
         self.y = y
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        np.random.seed(42)
         self.background = background if background else X.values[np.random.choice(X.shape[0], 100, replace=False)]
         self.explainer = shap.GradientExplainer(model, [torch.from_numpy(self.background).float().to(self.device)])
 
@@ -92,6 +93,7 @@ class ImageGradientSHAP:
         self.y = y
         self.model = model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        np.random.seed(42)
         self.background = background if background else X[np.random.choice(X.shape[0], 100, replace=False)]
         self.explainer = shap.GradientExplainer(model, [torch.from_numpy(self.background).float().to(self.device)])
 
