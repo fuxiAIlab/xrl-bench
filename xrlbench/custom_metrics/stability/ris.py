@@ -56,7 +56,7 @@ class RIS:
         X_perturbed = X.copy()
         perturbed_inds = [range(X.shape[1]) for _ in range(X.shape[0])]
         categorical_feature_inds = [feature_names.index(name) for name in self.environment.categorical_states]
-        X_perturbed = get_normal_perturbed_inputs(X_perturbed, perturbed_inds, categorical_feature_inds)
+        X_perturbed = get_normal_perturbed_inputs(X_perturbed, perturbed_inds, categorical_feature_inds) #
         perturbed_weights = explainer.explain(pd.DataFrame(X_perturbed, columns=feature_names))
         if isinstance(perturbed_weights, shap.Explanation):
             perturbed_weights = perturbed_weights.values
@@ -65,17 +65,22 @@ class RIS:
             perturbed_weights = [perturbed_weights[i, :, int(y[i])] for i in range(len(perturbed_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature weights.")
+        feature_weight_max = np.max(np.abs(feature_weights), axis=0)
+        feature_weight_max_clip = np.clip(feature_weight_max, a_min=0.001, a_max=None)
         for i in range(X.shape[0]):
             # compute x's difference ratio
             x_diff = X[i] - X_perturbed[i]
             x_clip = np.clip(X[i], a_min=0.001, a_max=None)
+            # x_flat_diff_norm = np.linalg.norm(x_diff, ord=2)
             x_flat_diff_norm = np.linalg.norm(np.divide(x_diff, x_clip), ord=2)
+            x_flat_diff_norm = np.clip(x_flat_diff_norm, a_min=0.001, a_max=None)
 
             # compute weight's difference ratio
             weight_diff = feature_weights[i] - perturbed_weights[i]
-            weight_clip = np.clip(feature_weights[i], a_min=0.001, a_max=None)
-            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, weight_clip), ord=2)
-
+            # weight_clip = np.clip(feature_weights[i], a_min=0.001, a_max=None)
+            # weight_flat_diff_norm = np.linalg.norm(weight_diff, ord=2)
+            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, feature_weight_max_clip), ord=2)
+            # weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, weight_clip), ord=2)
             stability = np.divide(weight_flat_diff_norm, x_flat_diff_norm)
             stability_ratios.append(stability)
         return max(stability_ratios)
@@ -140,17 +145,21 @@ class ImageRIS:
             perturbed_weights = [perturbed_weights[i, :, :, int(y[i])] for i in range(len(perturbed_weights))]
         elif len(np.array(feature_weights).shape) != 3:
             raise ValueError("Invalid shape for feature weights.")
+        feature_weight_max = np.max(np.abs(feature_weights), axis=0)
+        feature_weight_max_clip = np.clip(feature_weight_max, a_min=0.001, a_max=None)
         for i in range(X.shape[0]):
             # compute x's difference ratio
             x_diff = X[i] - X_perturbed[i]
-            x_clip = np.clip(X[i], a_min=0.001, a_max=None)
-            x_flat_diff_norm = np.linalg.norm(np.divide(x_diff, x_clip).flatten(), ord=2)
+            # x_clip = np.clip(X[i], a_min=0.001, a_max=None)
+            # x_flat_diff_norm = np.linalg.norm(np.divide(x_diff, x_clip).flatten(), ord=2)
+            x_flat_diff_norm = np.linalg.norm(x_diff.flatten(), ord=2)
+            x_flat_diff_norm = np.clip(x_flat_diff_norm, a_min=0.001, a_max=None)
 
             # compute weight's difference ratio
             weight_diff = feature_weights[i] - perturbed_weights[i]
-            weight_clip = np.clip(feature_weights[i], a_min=0.001, a_max=None)
-            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, weight_clip).flatten(), ord=2)
-
+            # weight_clip = np.clip(feature_weights[i], a_min=0.001, a_max=None)
+            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, feature_weight_max_clip).flatten(), ord=2)
+            # weight_flat_diff_norm = np.linalg.norm(weight_diff.flatten(), ord=2)
             stability = np.divide(weight_flat_diff_norm, x_flat_diff_norm)
             stability_ratios.append(stability)
         return max(stability_ratios)
