@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 
-def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None, mean=0.0, std=0.05):
+def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None, mean=0.0, std=0.5):
     """
     Perturb the input data by adding Gaussian noise to selected features.
 
@@ -40,36 +40,31 @@ def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None
         raise ValueError("Standard deviation must be non-negative.")
 
     if len(X.shape) == 2:
+        # X_mean = np.mean(X, axis=0)
+        X_std = np.std(X, axis=0)
         for i in range(X.shape[0]):
             for ind in perturbed_inds[i]:
                 if ind in categorical_feature_inds:
                     X[i, ind] = random.choice(np.unique(X[:, ind]))
                 else:
                     noise = np.random.normal(mean, std)
-                    X[i, ind] += noise
+                    X[i, ind] += noise*X_std[ind]
     elif len(X.shape) == 4:
         for i in range(X.shape[0]):
             for c in range(X[i].shape[0]):
                 flat = X[i, c].flatten()
                 for ind in perturbed_inds[i]:
-                    noise = np.random.normal(mean, std)
-                    flat[ind] += noise
+                    flat[ind] = 0
+                    # if flat[ind] == 0:
+                    #     noise = 0
+                    # else:
+                    #     noise = np.random.normal(mean, std)
+                    # # print(flat[ind], noise)
+                    # flat[ind] += noise
                 X[i, c] = flat.reshape(X.shape[2], X.shape[3])
     else:
         raise ValueError("Invalid shape for inputs.")
     return X
-
-    # if categorical_state_inds is None:
-    #     categorical_state_inds = []
-    #
-    # for i in range(states.shape[0]):
-    #     for ind in perturbed_inds:
-    #         if ind in categorical_state_inds:
-    #             states[i, ind] = random.choice(np.unique(states[:, ind]))
-    #         else:
-    #             noise = np.random.normal(mean, std, 1)[0]
-    #             states[i, ind] = states[i, ind] + noise
-    # return states
 
 
 
