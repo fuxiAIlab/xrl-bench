@@ -111,7 +111,7 @@ class BreakOut:
         torch.save(self.agent.policy_network.state_dict(), os.path.join(".", "model", "BreakOut.pth"))
         return self.agent.policy_network
 
-    def get_dataset(self, generate=False, n_episodes=4, max_t=500, data_format="h5"):
+    def get_dataset(self, generate=False, n_episodes=10, max_t=500, data_format="h5"):
         """
         Get the dataset for the Break Out environment.
 
