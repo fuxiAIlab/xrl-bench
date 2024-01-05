@@ -83,7 +83,7 @@ class TabularSHAP:
             task_metric = 'binary_logloss'
         model = lightgbm.LGBMClassifier(objective=task_obj, num_leaves=31, learning_rate=0.05, n_estimators=1000)
         model.fit(X_train, y_train, eval_set=[(X_test, y_test)], eval_metric=task_metric,
-                  early_stopping_rounds=10, categorical_feature=self.categorical_names, verbose=False)
+                  early_stopping_rounds=10, categorical_feature=self.categorical_names, verbose=True)
         self.predictions = model.predict(self.X_enc, num_iteration=model.best_iteration_)
         self.report = classification_report(self.y, self.predictions)
         self.explainer = shap.Explainer(model)
