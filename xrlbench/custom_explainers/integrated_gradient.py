@@ -11,6 +11,7 @@ class IntegratedGradient:
     def __init__(self, X, y, model, steps=50, background=None):
         """
         Class for explaining the model prediction using IntegratedGradient. https://arxiv.org/pdf/1703.01365.pdf
+        Original codes. https://github.com/TianhongDai/integrated-gradient-pytorch/blob/master/integrated_gradients.py
 
         Parameters:
         -----------
@@ -40,6 +41,7 @@ class IntegratedGradient:
         self.steps = steps
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         background = background.values if isinstance(background, pd.DataFrame) else background
+        np.random.seed(42)
         self.background = background if background else X.values[np.random.choice(X.shape[0], 100, replace=False)]
         self.background = torch.from_numpy(self.background).float().to(self.device)
 
@@ -96,7 +98,7 @@ class IntegratedGradient:
 
 
 class ImageIntegratedGradient:
-    def __init__(self, X, y, model, steps=50, background=None):
+    def __init__(self, X, y, model, steps=100, background=None):
         """
         Class for explaining the model prediction using IntegratedGradient. https://arxiv.org/pdf/1703.01365.pdf
 
@@ -127,6 +129,7 @@ class ImageIntegratedGradient:
         self.model = model
         self.steps = steps
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        np.random.seed(42)
         self.background = background if background else X[np.random.choice(X.shape[0], 100, replace=False)]
         self.background = torch.from_numpy(self.background).float().to(self.device)
 
