@@ -17,7 +17,7 @@ class AUM:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=3):
+    def evaluate(self, X, y, feature_weights, k=3, is_abs=True):
         """
         Evaluate the performance of XRL methods using AUM metric.
 
@@ -52,7 +52,10 @@ class AUM:
             feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature_weights.")
-        weights_ranks = [np.argsort(feature_weights[i])[:k] for i in range(len(feature_weights))]
+        if is_abs:
+            weights_ranks = [np.argsort(np.abs(feature_weights[i]))[:k] for i in range(len(feature_weights))]
+        else:
+            weights_ranks = [np.argsort(feature_weights[i])[:k] for i in range(len(feature_weights))]
         masked_X = X.copy()
         for i in range(X.shape[0]):
             masked_X[i][weights_ranks[i]] = 0
@@ -73,7 +76,7 @@ class ImageAUM:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=30):
+    def evaluate(self, X, y, feature_weights, k=30, is_abs=True):
         """
         Evaluate the performance of XRL methods using AUM metric.
 
@@ -106,10 +109,13 @@ class ImageAUM:
         if len(np.array(feature_weights).shape) == 5:
             feature_weights = [np.sum(feature_weights[i, :, :, :, int(y[i])], axis=0) for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) == 4:
-            feature_weights = [feature_weights[i, :, :, int(y[i])] for i in range(len(feature_weights))]
+            feature_weights = [np.sum(feature_weights[i, :, :, :], axis=0) for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 3:
             raise ValueError("Invalid shape for feature_weights.")
-        weights_ranks = [np.argsort(feature_weights[i], axis=None)[:k] for i in range(len(feature_weights))]
+        if is_abs:
+            weights_ranks = [np.argsort(np.abs(feature_weights[i]), axis=None)[:k] for i in range(len(feature_weights))]
+        else:
+            weights_ranks = [np.argsort(feature_weights[i], axis=None)[:k] for i in range(len(feature_weights))]
         masked_X = X.copy()
         for i in range(X.shape[0]):
             for c in range(len(masked_X[i])):
