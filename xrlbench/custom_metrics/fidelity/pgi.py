@@ -18,7 +18,7 @@ class PGI:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=3):
+    def evaluate(self, X, y, feature_weights, k=3, is_abs=True):
         """
         Evaluate the performance of XRL methods using PGI metric.
 
@@ -53,8 +53,11 @@ class PGI:
             feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature weights.")
+        if is_abs:
+            weights_ranks = [np.argsort(-np.abs(feature_weights[i]))[:k] for i in range(len(feature_weights))]
+        else:
+            weights_ranks = [np.argsort(-feature_weights[i])[:k] for i in range(len(feature_weights))]
         prediction_gap = []
-        weights_ranks = [np.argsort(-feature_weights[i])[:k] for i in range(len(feature_weights))]
         X_perturbed = X.copy()
         categorical_feature_inds = [feature_names.index(name) for name in self.environment.categorical_states]
         X_perturbed = get_normal_perturbed_inputs(X_perturbed, weights_ranks, categorical_feature_inds)
@@ -77,7 +80,7 @@ class ImagePGI:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=30):
+    def evaluate(self, X, y, feature_weights, k=30, is_abs=True):
         """
         Evaluate the performance of XRL methods using PGI metric.
 
@@ -109,12 +112,14 @@ class ImagePGI:
         if len(np.array(feature_weights).shape) == 5:
             feature_weights = [np.sum(feature_weights[i, :, :, :, int(y[i])], axis=0) for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) == 4:
-            feature_weights = [feature_weights[i, :, :, int(y[i])] for i in range(len(feature_weights))]
+            feature_weights = [np.sum(feature_weights[i, :, :, :], axis=0) for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 3:
             raise ValueError("Invalid shape for feature weights.")
-
         prediction_gap = []
-        weights_ranks = [np.argsort(-feature_weights[i], axis=None)[:k] for i in range(len(feature_weights))]
+        if is_abs:
+            weights_ranks = [np.argsort(-np.abs(feature_weights[i]), axis=None)[:k] for i in range(len(feature_weights))]
+        else:
+            weights_ranks = [np.argsort(-feature_weights[i], axis=None)[:k] for i in range(len(feature_weights))]
         X_perturbed = X.copy()
         X_perturbed = get_normal_perturbed_inputs(X_perturbed, weights_ranks)
         for i in range(X.shape[0]):
