@@ -8,11 +8,11 @@ valid_metrics = {
     "PGI": xrlbench.custom_metrics.PGI,
     "PGU": xrlbench.custom_metrics.PGU,
     "RIS": xrlbench.custom_metrics.RIS,
-    "ImageAIM": xrlbench.custom_metrics.ImageAIM,
-    "ImageAUM": xrlbench.custom_metrics.ImageAUM,
-    "ImagePGI": xrlbench.custom_metrics.ImagePGI,
-    "ImagePGU": xrlbench.custom_metrics.ImagePGU,
-    "ImageRIS": xrlbench.custom_metrics.ImageRIS
+    "imageAIM": xrlbench.custom_metrics.ImageAIM,
+    "imageAUM": xrlbench.custom_metrics.ImageAUM,
+    "imagePGI": xrlbench.custom_metrics.ImagePGI,
+    "imagePGU": xrlbench.custom_metrics.ImagePGU,
+    "imageRIS": xrlbench.custom_metrics.ImageRIS
 }
 
 
@@ -52,5 +52,6 @@ class Evaluator:
         **kwargs :
             Keyword arguments to be passed to the evaluator.
         """
+        X = X / 255 if self.metric.find("image") != -1 else X
         results = self.evaluator.evaluate(X, y, feature_weights, **kwargs)
         return results
