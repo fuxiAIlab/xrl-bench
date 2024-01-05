@@ -27,12 +27,12 @@ class Explainer:
         -----------
         method : str
             The name of the explainer method to be used. Supported methods are:
-            "tabularShap", "sarfa", "visualizeSaliency", "tabularLime", "deepShap", "gradientShap"
+            "tabularShap", "sarfa", "perturbationSaliency", "tabularLime", "deepShap", "gradientShap", "integratedGradient", "integratedGradient", "imageSarfa", imageDeepShap", "imageGradientShap", "imageIntegratedGradient"
         state : numpy.ndarray
             The state array.
         action : numpy.ndarray
             The action array.
-         model : pytorch model, default=None
+        model : pytorch model, default=None
             The trained reinforcement learning model.
         categorical_names : list, optional (default=None)
             A list of names of categorical features in X.

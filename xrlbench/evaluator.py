@@ -24,7 +24,7 @@ class Evaluator:
         Parameters:
         -----------
         metric : str
-            The name of the metirc to be used. Supported metrics are : "AIM", "AUM", "PGI", "PGU", "RIS"
+            The name of the metirc to be used. Supported metrics are : "AIM", "AUM", "PGI", "PGU", "RIS", "imageAIM", "imageAUM", "imagePGI", "imagePGU", "imageRIS"
         environment : object
             The environment to be used for evaluation.
         **kwargs :
