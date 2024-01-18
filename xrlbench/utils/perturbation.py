@@ -2,9 +2,60 @@
 
 import numpy as np
 import random
+import copy
+from scipy.ndimage.filters import gaussian_filter
 
 
-def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None, mean=0.0, std=0.5):
+def get_mask(feature, centers, size, zero_perturbed):
+    """
+    Generate a circular mask.
+
+    Parameters:
+    -----------
+    center : list
+        The center coordinates of the circle.
+    size : list
+        The size of the mask.
+
+    Returns:
+    --------
+    numpy.ndarray
+        The circular mask.
+    """
+    mask = np.zeros(size)
+    for _center in centers:
+        center = [_center // size[1], _center % size[1]]
+        if not zero_perturbed and feature[0, center[0], center[1]] == 0 and feature[1, center[0], center[1]] == 0 and feature[2, center[0], center[1]] == 0:
+            continue
+        mask[center[0], center[1]] = 1
+    return mask
+
+
+def add_noise(feature, mask, r=3):
+    """
+    Add noise to the feature using the mask.
+
+    Parameters:
+    -----------
+    feature : numpy.ndarray
+        The input feature.
+    mask : numpy.ndarray
+        The mask to be applied.
+    r : int
+        The sigma value for the Gaussian filter.
+
+    Returns:
+    --------
+    numpy.ndarray
+        The feature with added noise.
+    """
+    feature_backend = copy.deepcopy(feature)
+    for c in range(0, feature.shape[0]):
+        feature_backend[c] = feature_backend[c] * (1 - mask) + gaussian_filter(feature_backend[c], sigma=r) * mask
+    return feature_backend
+
+
+def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None, mean=0.0, std=0.5, zero_perturbed=True):
     """
     Perturb the input data by adding Gaussian noise to selected features.
 
@@ -51,17 +102,8 @@ def get_normal_perturbed_inputs(X, perturbed_inds, categorical_feature_inds=None
                     X[i, ind] += noise*X_std[ind]
     elif len(X.shape) == 4:
         for i in range(X.shape[0]):
-            for c in range(X[i].shape[0]):
-                flat = X[i, c].flatten()
-                for ind in perturbed_inds[i]:
-                    flat[ind] = 0
-                    # if flat[ind] == 0:
-                    #     noise = 0
-                    # else:
-                    #     noise = np.random.normal(mean, std)
-                    # # print(flat[ind], noise)
-                    # flat[ind] += noise
-                X[i, c] = flat.reshape(X.shape[2], X.shape[3])
+            mask = get_mask(X[i], centers=perturbed_inds[i], size=[X.shape[2], X.shape[3]], zero_perturbed=zero_perturbed)
+            X[i] = add_noise(X[i], mask, r=5)
     else:
         raise ValueError("Invalid shape for inputs.")
     return X
