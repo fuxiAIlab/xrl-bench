@@ -6,6 +6,7 @@ valid_environments = {
     "lunarLander": xrlbench.custom_environment.LunarLander,
     "cartPole": xrlbench.custom_environment.CartPole,
     "flappyBird": xrlbench.custom_environment.FlappyBird,
+    "dunkCityDynasty": xrlbench.custom_environment.DunkCityDynasty,
     "breakOut": xrlbench.custom_environment.BreakOut,
     "pong": xrlbench.custom_environment.Pong
 }
