@@ -59,7 +59,7 @@ class AUM:
         masked_X = X.copy()
         for i in range(X.shape[0]):
             masked_X[i][weights_ranks[i]] = 0
-        y_pred = [self.environment.agent.act(masked_X[i]) for i in range(masked_X.shape[0])]
+        y_pred = [np.argmax(self.environment.agent.inference(masked_X[i]).data.numpy()) for i in range(masked_X.shape[0])]
         accuracy = np.mean(y_pred == y)
         return accuracy
 
