@@ -121,7 +121,7 @@ class ImagePGI:
         else:
             weights_ranks = [np.argsort(-feature_weights[i], axis=None)[:k] for i in range(len(feature_weights))]
         X_perturbed = X.copy()
-        X_perturbed = get_normal_perturbed_inputs(X_perturbed, weights_ranks)
+        X_perturbed = get_normal_perturbed_inputs(X_perturbed, weights_ranks, zero_perturbed=False)
         for i in range(X.shape[0]):
             y_pred = self.environment.agent.inference(X[i])[0][int(y[i])]
             perturbed_y_pred = self.environment.agent.inference(X_perturbed[i])[0][int(y[i])]
