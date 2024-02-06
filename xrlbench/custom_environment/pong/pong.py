@@ -58,7 +58,7 @@ class Pong:
         Load model for the reinforcement learning agent.
         """
         try:
-            self.model.load_state_dict(torch.load(os.path.join(".", "model", "Pong.pth")))
+            self.model.load_state_dict(torch.load(os.path.join(".", "model", "Pong.pth"), map_location=self.device))
         except:
             print("This model is not existing, please train it.")
 
