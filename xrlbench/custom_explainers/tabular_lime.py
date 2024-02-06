@@ -63,7 +63,6 @@ class TabularLime:
         self.categorical_names = categorical_names if categorical_names else []
         self.categorical_index = [self.feature_names.index(state) for state in categorical_names] if categorical_names else []
         self.explainer = lime.lime_tabular.LimeTabularExplainer(self.X, mode=mode, feature_names=self.feature_names, categorical_features=self.categorical_index)
-        # torch.from_numpy(state).float().unsqueeze(0).to(self.device)
         out = self.model(torch.from_numpy(self.X[0:1]).float().to(self.device))
         if len(out.shape) == 1:
             self.out_dim = 1
@@ -105,4 +104,3 @@ class TabularLime:
                     importance_scores[j][i, k] = v
         self.model.to(torch.device("cuda" if torch.cuda.is_available() else "cpu"))
         return np.array(importance_scores).transpose((1, 2, 0))
-
