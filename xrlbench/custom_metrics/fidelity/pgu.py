@@ -18,7 +18,7 @@ class PGU:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=3, is_abs=True):
+    def evaluate(self, X, y, feature_weights, k=3, is_abs=True, y_encode=None):
         """
         Evaluate the performance of XRL methods using PGU metric.
 
@@ -50,7 +50,10 @@ class PGU:
         y = y.values if isinstance(y, pd.Series) else y
         feature_weights = feature_weights.values if isinstance(feature_weights, shap.Explanation) else feature_weights
         if len(np.array(feature_weights).shape) == 3:
-            feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
+            if y_encode is not None:
+                feature_weights = [feature_weights[i, :, int(y_encode[i])] for i in range(len(feature_weights))]
+            else:
+                feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature weights.")
         if is_abs:
@@ -62,8 +65,8 @@ class PGU:
         categorical_feature_inds = [feature_names.index(name) for name in self.environment.categorical_states]
         X_perturbed = get_normal_perturbed_inputs(X_perturbed, weights_ranks, categorical_feature_inds)
         for i in range(X.shape[0]):
-            y_pred = self.environment.agent.inference(X[i])[0][int(y[i])]
-            perturbed_y_pred = self.environment.agent.inference(X_perturbed[i])[0][int(y[i])]
+            y_pred = self.environment.agent.inference(X[i]).data.numpy()[0][int(y[i])]
+            perturbed_y_pred = self.environment.agent.inference(X_perturbed[i]).data.numpy()[0][int(y[i])]
             prediction_gap.append(np.abs(y_pred - perturbed_y_pred))
         return np.mean(prediction_gap)
 

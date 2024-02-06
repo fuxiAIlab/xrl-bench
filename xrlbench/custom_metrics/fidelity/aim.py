@@ -17,7 +17,7 @@ class AIM:
         """
         self.environment = environment
 
-    def evaluate(self, X, y, feature_weights, k=3, is_abs=True):
+    def evaluate(self, X, y, feature_weights, k=3, is_abs=True, y_encode=None):
         """
         Evaluate the performance of XRL methods using AIM metric.
 
@@ -48,7 +48,10 @@ class AIM:
         y = y.values if isinstance(y, pd.Series) else y
         feature_weights = feature_weights.values if isinstance(feature_weights, shap.Explanation) else feature_weights
         if len(np.array(feature_weights).shape) == 3:
-            feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
+            if y_encode is not None:
+                feature_weights = [feature_weights[i, :, int(y_encode[i])] for i in range(len(feature_weights))]
+            else:
+                feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature_weights.")
         if is_abs:
