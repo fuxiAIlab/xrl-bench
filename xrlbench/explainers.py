@@ -48,21 +48,21 @@ class Explainer:
         self.action = action
         self.explainer = valid_explainers[method](X=state, y=action, **kwargs)
 
-    def explain(self, state=None):
+    def explain(self, X=None, **kwargs):
         """
         Explains the given state using the selected explainer.
 
         Parameters:
         -----------
-        state : numpy.ndarray, optional
+        X : numpy.ndarray, optional
             The state array. If None, the state passed to the constructor will be used.
 
         Returns:
         --------
         A dictionary containing the explanation results.
         """
-        if state is None:
-            state = self.state
-        results = self.explainer.explain(state)
+        if X is None:
+            X = self.state
+        results = self.explainer.explain(X, **kwargs)
         return results
 
