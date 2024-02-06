@@ -8,8 +8,6 @@ import pandas as pd
 from tqdm import tqdm
 from scipy.ndimage.filters import gaussian_filter
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
 
 class PerturbationSaliency:
     def __init__(self, X, y, model, categorical_names=None):
@@ -103,7 +101,6 @@ class PerturbationSaliency:
             Q = self.model(torch.from_numpy(feature).float().unsqueeze(0).to(self.device))
             Q_perturbed = self.model(torch.from_numpy(feature_noised).float().unsqueeze(0).to(self.device))
         Q = np.squeeze(Q.cpu().numpy())
-        # Q_max_idx = np.argmax(Q)
         Q_perturbed = np.squeeze(Q_perturbed.cpu().numpy())
         score = [np.sqrt(np.sum(np.square(Q - Q_perturbed[i]))) for i in range(Q_perturbed.shape[0])]
         return np.array(score)
