@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import shap
+import torch
 import numpy as np
 import pandas as pd
 from xrlbench.utils.perturbation import get_normal_perturbed_inputs
@@ -17,8 +18,9 @@ class RIS:
             The environment used for evaluating XRL methods.
         """
         self.environment = environment
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    def evaluate(self, X, y, feature_weights, explainer):
+    def evaluate(self, X, y, feature_weights, explainer, y_encode=None):
         """
         Evaluate the RIS of an XRL method.
 
@@ -61,25 +63,27 @@ class RIS:
         if isinstance(perturbed_weights, shap.Explanation):
             perturbed_weights = perturbed_weights.values
         if len(np.array(feature_weights).shape) == 3:
-            feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
-            perturbed_weights = [perturbed_weights[i, :, int(y[i])] for i in range(len(perturbed_weights))]
+            if y_encode is not None:
+                feature_weights = [feature_weights[i, :, int(y_encode[i])] for i in range(len(feature_weights))]
+                perturbed_weights = [perturbed_weights[i, :, int(y_encode[i])] for i in range(len(perturbed_weights))]
+            else:
+                feature_weights = [feature_weights[i, :, int(y[i])] for i in range(len(feature_weights))]
+                perturbed_weights = [perturbed_weights[i, :, int(y[i])] for i in range(len(perturbed_weights))]
         elif len(np.array(feature_weights).shape) != 2:
             raise ValueError("Invalid shape for feature weights.")
-        feature_weight_max = np.max(np.abs(feature_weights), axis=0)
-        feature_weight_max_clip = np.clip(feature_weight_max, a_min=0.001, a_max=None)
         for i in range(X.shape[0]):
             # compute x's difference ratio
             x_diff = X[i] - X_perturbed[i]
-            x_clip = np.clip(X[i], a_min=0.001, a_max=None)
+            x_clip = np.clip([max(x, xp) for x, xp in zip(np.abs(X[i]), np.abs(X_perturbed[i]))], a_min=0.001, a_max=None)   # np.clip(X[i], a_min=0.001, a_max=None)
             # x_flat_diff_norm = np.linalg.norm(x_diff, ord=2)
             x_flat_diff_norm = np.linalg.norm(np.divide(x_diff, x_clip), ord=2)
             x_flat_diff_norm = np.clip(x_flat_diff_norm, a_min=0.001, a_max=None)
 
             # compute weight's difference ratio
             weight_diff = feature_weights[i] - perturbed_weights[i]
-            # weight_clip = np.clip(feature_weights[i], a_min=0.001, a_max=None)
+            weight_clip = np.clip([max(fw, pw) for fw, pw in zip(np.abs(feature_weights[i]), np.abs(perturbed_weights[i]))], a_min=0.001, a_max=None)# np.clip(feature_weights[i], a_min=0.001, a_max=None)
             # weight_flat_diff_norm = np.linalg.norm(weight_diff, ord=2)
-            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, feature_weight_max_clip), ord=2)
+            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, weight_clip), ord=2)
             # weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, weight_clip), ord=2)
             stability = np.divide(weight_flat_diff_norm, x_flat_diff_norm)
             stability_ratios.append(stability)
@@ -145,20 +149,18 @@ class ImageRIS:
             perturbed_weights = [perturbed_weights[i, :, :, int(y[i])] for i in range(len(perturbed_weights))]
         elif len(np.array(feature_weights).shape) != 3:
             raise ValueError("Invalid shape for feature weights.")
-        feature_weight_max = np.max(np.abs(feature_weights), axis=0)
-        feature_weight_max_clip = np.clip(feature_weight_max, a_min=0.001, a_max=None)
         for i in range(X.shape[0]):
             # compute x's difference ratio
             x_diff = X[i] - X_perturbed[i]
-            # x_clip = np.clip(X[i], a_min=0.001, a_max=None)
-            # x_flat_diff_norm = np.linalg.norm(np.divide(x_diff, x_clip).flatten(), ord=2)
-            x_flat_diff_norm = np.linalg.norm(x_diff.flatten(), ord=2)
+            x_clip = np.clip([np.maximum(x, xp) for x, xp in zip(np.abs(X[i]), np.abs(X_perturbed[i]))], a_min=0.001, a_max=None)    # np.clip(X[i], a_min=0.001, a_max=None)
+            x_flat_diff_norm = np.linalg.norm(np.divide(x_diff, x_clip).flatten(), ord=2)
+            # x_flat_diff_norm = np.linalg.norm(x_diff.flatten(), ord=2)
             x_flat_diff_norm = np.clip(x_flat_diff_norm, a_min=0.001, a_max=None)
 
             # compute weight's difference ratio
             weight_diff = feature_weights[i] - perturbed_weights[i]
-            # weight_clip = np.clip(feature_weights[i], a_min=0.001, a_max=None)
-            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, feature_weight_max_clip).flatten(), ord=2)
+            weight_clip = np.clip([np.maximum(fw, pw) for fw, pw in zip(np.abs(feature_weights[i]), np.abs(perturbed_weights[i]))], a_min=0.001, a_max=None) # np.clip(feature_weights[i], a_min=0.001, a_max=None)
+            weight_flat_diff_norm = np.linalg.norm(np.divide(weight_diff, weight_clip).flatten(), ord=2)
             # weight_flat_diff_norm = np.linalg.norm(weight_diff.flatten(), ord=2)
             stability = np.divide(weight_flat_diff_norm, x_flat_diff_norm)
             stability_ratios.append(stability)
