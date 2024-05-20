@@ -74,19 +74,12 @@ class TabularSHAP:
         return encoders
 
     def _fit_model(self):
-        X_train, X_test, y_train, y_test = train_test_split(self.X_enc, self.y, test_size=0.1, random_state=42)
-        if len(np.unique(self.y)) > 2:
-            task_obj = 'multiclass'
-            task_metric = 'multi_logloss'
-        else:
-            task_obj = 'binary'
-            task_metric = 'binary_logloss'
-        model = lightgbm.LGBMClassifier(objective=task_obj, num_leaves=31, learning_rate=0.05, n_estimators=1000)
-        model.fit(X_train, y_train, eval_set=[(X_test, y_test)], eval_metric=task_metric,
-                  early_stopping_rounds=10, categorical_feature=self.categorical_names, verbose=True)
-        self.predictions = model.predict(self.X_enc, num_iteration=model.best_iteration_)
-        self.report = classification_report(self.y, self.predictions)
+        """
+        TODO: Build a good ensemble tree student model to fit the policy model.
+        """
+        model = lightgbm.LGBMClassifier()
         self.explainer = shap.Explainer(model)
+
 
     def _generate_shap_values(self, X):
         X_enc = X.copy()
