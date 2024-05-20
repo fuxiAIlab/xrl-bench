@@ -4,6 +4,8 @@
 
 **XRL-Bench** is a comprehensive benchmark suite for evaluating eXplainable Reinforcement Learning (XRL) methods. It provides a standard and unified platform for researches and practitioners to develop, test, and compare their state importance-based XRL algorithms. XRL-Bench includes a wide range of environments, explainers, and evaluation methods to facilitate the development of state-of-the-art XRL techniques.
 
+See our KDD [paper](https://arxiv.org/abs/2402.12685) for details and citations.
+
 ## Key Features
 - **Environments**: XRL-Bench includes diverse open-source environments based on tabular state form, such as [Dunk City Dynasty](https://github.com/FuxiRL/DunkCityDynasty), Lunar Lander, CartPole, and Flappy Bird, and image state form, such as Breakout, Pong, covering a wide range of reinforcement learning tasks.
 - **Explainers**: The benchmark supports various state importance-based explainers like TabularSHAP, TabularLIME, SARFA, Perturbation Saliency, Integrated Gradient, DeepSHAP and GradientSHAP, to understand the decision-making process of the RL agents.
