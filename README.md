@@ -7,7 +7,7 @@
 See our KDD [paper](https://arxiv.org/abs/2402.12685) for details and citations.
 
 ## Key Features
-- **Environments**: XRL-Bench includes diverse open-source environments based on tabular state form, such as [Dunk City Dynasty](https://github.com/FuxiRL/DunkCityDynasty), Lunar Lander, CartPole, and Flappy Bird, and image state form, such as Breakout, Pong, covering a wide range of reinforcement learning tasks.
+- **Environments**: XRL-Bench includes diverse open-source environments based on tabular state form, such as [Dunk City Dynasty](https://github.com/FuxiRL/DunkCityDynasty) (only supported in Python3.8), Lunar Lander, CartPole, and Flappy Bird (supported in Python3.9 or higher version), and image state form, such as Breakout, Pong, covering a wide range of reinforcement learning tasks.
 - **Explainers**: The benchmark supports various state importance-based explainers like TabularSHAP, TabularLIME, SARFA, Perturbation Saliency, Integrated Gradient, DeepSHAP and GradientSHAP, to understand the decision-making process of the RL agents.
 - **Evaluation Methods**: XRL-Bench provides multiple evaluation methods, including Fidelity-focused methods such as AIM, AUM, PGI and PGU, and Stability-focused methods such as RIS. 
 
